@@ -8,6 +8,8 @@ use App\Models\SubSite;
 use App\Models\AcousticStudy;
 use Illuminate\Support\Facades\DB;
 
+
+
 class PlaceController extends Controller
 {
     public function index()
@@ -54,5 +56,13 @@ class PlaceController extends Controller
                 }
             }
         });
+    }
+    public function show(Place $place)
+    {
+        $place->load([
+            'subSites.acousticStudies'
+        ]);
+
+        return view('places.show', compact('place'));
     }
 }

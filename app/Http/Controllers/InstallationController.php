@@ -57,4 +57,15 @@ class InstallationController extends Controller
             }
         });
     }
+    public function show(Installation $installation)
+    {
+        $installation->load([
+            'place',
+            'subSites',
+            'files.subSite',
+        ]);
+
+        return view('installations.show', compact('installation'));
+    }
+
 }

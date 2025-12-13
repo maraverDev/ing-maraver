@@ -17,6 +17,7 @@
                 <th>Lugar</th>
                 <th>Limitadores</th>
                 <th>Archivos</th>
+                <th>Detalle</th>
             </tr>
         </thead>
         <tbody>
@@ -27,6 +28,11 @@
                     <td>{{ $installation->limiters_installed }}</td>
                     <td>
                         <span class="text-muted">Descargar</span>
+                    </td>
+                    <td>
+                        <a href="{{ route('installations.show', $installation) }}">
+                            Ver detalle
+                        </a>
                     </td>
                 </tr>
             @empty

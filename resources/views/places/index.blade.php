@@ -28,8 +28,11 @@
                     <td>{{ $place->sub_sites_count }}</td>
                     <td>{{ $place->max_limiters }}</td>
                     <td>
-                        <span class="text-muted">Pendiente</span>
+                        <a href="{{ route('places.show', $place) }}">
+                            Ver estudios
+                        </a>
                     </td>
+
                 </tr>
             @empty
                 <tr>
