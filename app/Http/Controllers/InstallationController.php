@@ -67,5 +67,19 @@ class InstallationController extends Controller
 
         return view('installations.show', compact('installation'));
     }
+    public function updateNotes(Request $request, Installation $installation)
+    {
+        $request->validate([
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        $installation->update([
+            'notes' => $request->notes,
+        ]);
+
+        return redirect()
+            ->route('installations.show', $installation)
+            ->with('success', 'Notas actualizadas correctamente.');
+    }
 
 }

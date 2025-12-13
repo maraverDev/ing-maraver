@@ -47,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/installation-files/{file}/download', [InstallationFileController::class, 'download'])
             ->name('installation-files.download');
     });
-
+    Route::middleware('role:admin,technician')->group(function () {
+        Route::patch('/installations/{installation}/notes', [InstallationController::class, 'updateNotes'])
+            ->name('installations.notes.update');
+    });
 });
 

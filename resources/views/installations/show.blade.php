@@ -135,5 +135,50 @@
         @endforelse
     </div>
 </div>
+{{-- Notas técnicas --}}
+<div class="card mt-4">
+    <div class="card-header">
+        <strong>Notas técnicas</strong>
+    </div>
+
+    <div class="card-body">
+
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('technician'))
+
+            <form method="POST" action="{{ route('installations.notes.update', $installation) }}">
+                @csrf
+                @method('PATCH')
+
+                <div class="mb-3">
+                    <textarea
+                        name="notes"
+                        class="form-control"
+                        rows="5"
+                        placeholder="Observaciones técnicas, incidencias, ajustes realizados…"
+                    >{{ old('notes', $installation->notes) }}</textarea>
+                </div>
+
+                <button class="btn btn-primary">
+                    Guardar notas
+                </button>
+            </form>
+
+        @else
+
+            @if($installation->notes)
+                <p class="mb-0">{{ $installation->notes }}</p>
+            @else
+                <p class="text-muted mb-0">No hay notas técnicas registradas.</p>
+            @endif
+
+        @endif
+    </div>
+</div>
 
 @endsection
