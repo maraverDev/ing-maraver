@@ -9,6 +9,8 @@ class InstallationFileController extends Controller
 {
     public function download(InstallationFile $file)
     {
+        $this->authorize('view', $file->installation);
+
         if (!Storage::exists($file->file_path)) {
             abort(404);
         }

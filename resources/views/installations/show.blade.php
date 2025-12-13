@@ -149,7 +149,7 @@
             </div>
         @endif
 
-        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('technician'))
+        @can('update', $installation)
 
             <form method="POST" action="{{ route('installations.notes.update', $installation) }}">
                 @csrf
@@ -177,7 +177,8 @@
                 <p class="text-muted mb-0">No hay notas técnicas registradas.</p>
             @endif
 
-        @endif
+        @endcan
+
     </div>
 </div>
 

@@ -51,5 +51,9 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/installations/{installation}/notes', [InstallationController::class, 'updateNotes'])
             ->name('installations.notes.update');
     });
+    Route::patch('/installations/{installation}/notes', [InstallationController::class, 'updateNotes'])
+        ->name('installations.notes.update')
+        ->middleware('role:admin,technician');
+
 });
 

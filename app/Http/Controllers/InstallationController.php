@@ -7,6 +7,7 @@ use App\Models\Installation;
 use App\Models\InstallationFile;
 use Illuminate\Support\Facades\DB;
 use App\Models\Place;
+use Illuminate\Http\Request;
 
 class InstallationController extends Controller
 {
@@ -59,6 +60,8 @@ class InstallationController extends Controller
     }
     public function show(Installation $installation)
     {
+        $this->authorize('view', $installation);
+
         $installation->load([
             'place',
             'subSites',
@@ -67,8 +70,11 @@ class InstallationController extends Controller
 
         return view('installations.show', compact('installation'));
     }
+
     public function updateNotes(Request $request, Installation $installation)
     {
+        $this->authorize('update', $installation);
+
         $request->validate([
             'notes' => ['nullable', 'string'],
         ]);
@@ -81,5 +87,6 @@ class InstallationController extends Controller
             ->route('installations.show', $installation)
             ->with('success', 'Notas actualizadas correctamente.');
     }
+
 
 }
