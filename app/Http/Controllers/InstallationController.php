@@ -56,6 +56,12 @@ class InstallationController extends Controller
                     ]);
                 }
             }
+            $installation->logs()->create([
+                'user_id' => auth()->id(),
+                'action' => 'Creación de instalación',
+                'description' => 'Registro inicial de la instalación.',
+            ]);
+
         });
     }
     public function show(Installation $installation)
@@ -66,6 +72,12 @@ class InstallationController extends Controller
             'place',
             'subSites',
             'files.subSite',
+        ]);
+        $installation->load([
+            'place',
+            'subSites',
+            'files.subSite',
+            'logs.user',
         ]);
 
         return view('installations.show', compact('installation'));
@@ -81,11 +93,18 @@ class InstallationController extends Controller
 
         $installation->update([
             'notes' => $request->notes,
+
+        ]);
+        $installation->logs()->create([
+            'user_id' => auth()->id(),
+            'action' => 'Actualización de notas',
+            'description' => $request->notes,
         ]);
 
         return redirect()
             ->route('installations.show', $installation)
             ->with('success', 'Notas actualizadas correctamente.');
+
     }
 
 

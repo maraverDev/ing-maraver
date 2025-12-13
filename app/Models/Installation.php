@@ -37,4 +37,10 @@ class Installation extends Model
     {
         return $this->hasMany(InstallationFile::class);
     }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(InstallationLog::class)->orderByDesc('created_at');
+    }
+
 }

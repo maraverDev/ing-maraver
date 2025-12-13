@@ -181,6 +181,41 @@
 
     </div>
 </div>
+{{-- Histórico de intervenciones --}}
+<div class="card mt-4">
+    <div class="card-header">
+        <strong>Histórico de intervenciones</strong>
+    </div>
+
+    <div class="card-body">
+
+        @if($installation->logs->isEmpty())
+            <p class="text-muted mb-0">No hay intervenciones registradas.</p>
+        @else
+            <ul class="list-group list-group-flush">
+                @foreach($installation->logs as $log)
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ $log->action }}</strong>
+                            <span class="text-muted small">
+                                {{ $log->created_at->format('d/m/Y H:i') }}
+                            </span>
+                        </div>
+
+                        <div class="text-muted small mb-1">
+                            {{ $log->user->name }}
+                        </div>
+
+                        @if($log->description)
+                            <div>{{ $log->description }}</div>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+    </div>
+</div>
 
 
 @endsection
