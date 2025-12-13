@@ -96,20 +96,20 @@
                         </label>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>CSV</label>
-                            <input type="file" name="files[${subSite.id}][csv]" class="form-control" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label>PDF Programación</label>
-                            <input type="file" name="files[${subSite.id}][pdf_programming]" class="form-control" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label>PDF Instalación</label>
-                            <input type="file" name="files[${subSite.id}][pdf_installation]" class="form-control" required>
-                        </div>
+                    <div class="col-md-12">
+                        <label>Archivos (CSV + PDFs)</label>
+                        <input
+                            type="file"
+                            name="files[${subSite.id}][]"
+                            class="form-control"
+                            multiple
+                            accept=".csv,.pdf"
+                        >
+                        <small class="text-muted">
+                            CSV (datos), PDF SET (programación), PDF INS (instalación)
+                        </small>
                     </div>
+
                 </div>
             `);
         });

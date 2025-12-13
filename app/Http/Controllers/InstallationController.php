@@ -37,9 +37,23 @@ class InstallationController extends Controller
 
             foreach ($request->sub_sites as $subSiteId) {
 
-                $files = $request->file("files.$subSiteId");
+                $uploadedFiles = $request->file("files.$subSiteId");
 
-                foreach ($files as $type => $file) {
+                foreach ($uploadedFiles as $file) {
+
+                    $name = strtoupper($file->getClientOriginalName());
+                    $ext = strtolower($file->getClientOriginalExtension());
+
+                    if ($ext === 'csv') {
+                        $type = 'csv';
+                    } elseif ($ext === 'pdf' && str_contains($name, 'SET')) {
+                        $type = 'pdf_programming';
+                    } elseif ($ext === 'pdf' && str_contains($name, 'INS')) {
+                        $type = 'pdf_installation';
+                    } else {
+                        continue; // archivo no reconocido (ya validado antes)
+                    }
+
                     $path = $file->store(
                         "installations/{$installation->id}/{$subSiteId}/{$type}"
                     );
@@ -56,15 +70,15 @@ class InstallationController extends Controller
                 }
 
             }
+
             $installation->logs()->create([
                 'user_id' => auth()->id(),
                 'action' => 'Creación de instalación',
                 'description' => 'Registro inicial de la instalación.',
             ]);
-
         });
-        return redirect()->route('installations.index');
 
+        return redirect()->route('installations.index');
     }
     public function show(Installation $installation)
     {

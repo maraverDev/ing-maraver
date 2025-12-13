@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Place;
+use Illuminate\Validation\Validator;
 
 class StoreInstallationRequest extends FormRequest
 {
@@ -19,28 +20,55 @@ class StoreInstallationRequest extends FormRequest
             'place_id' => ['required', 'exists:places,id'],
             'installation_date' => ['required', 'date'],
             'limiters_installed' => ['required', 'integer', 'min:1'],
-
             'sub_sites' => ['required', 'array', 'min:1'],
-            'sub_sites.*' => ['required', 'exists:sub_sites,id'],
-
+            'sub_sites.*' => ['exists:sub_sites,id'],
             'files' => ['required', 'array'],
-            'files.*.csv' => ['required', 'file'],
-            'files.*.pdf_programming' => ['required', 'file'],
-            'files.*.pdf_installation' => ['required', 'file'],
         ];
     }
 
-    public function withValidator($validator)
+    public function withValidator(Validator $validator)
     {
         $validator->after(function ($validator) {
-            $place = Place::find($this->place_id);
 
-            if ($place && $this->limiters_installed > $place->max_limiters) {
-                $validator->errors()->add(
-                    'limiters_installed',
-                    'El número de limitadores supera el máximo permitido para este lugar.'
-                );
+            $subSites = $this->input('sub_sites', []);
+
+            foreach ($subSites as $subSiteId) {
+
+                $uploaded = $this->file("files.$subSiteId", []);
+
+                $found = [
+                    'csv' => false,
+                    'pdf_programming' => false,
+                    'pdf_installation' => false,
+                ];
+
+                foreach ($uploaded as $file) {
+                    $name = strtoupper($file->getClientOriginalName());
+                    $ext = strtolower($file->getClientOriginalExtension());
+
+                    if ($ext === 'csv') {
+                        $found['csv'] = true;
+                    }
+
+                    if ($ext === 'pdf' && str_contains($name, 'SET')) {
+                        $found['pdf_programming'] = true;
+                    }
+
+                    if ($ext === 'pdf' && str_contains($name, 'INS')) {
+                        $found['pdf_installation'] = true;
+                    }
+                }
+
+                foreach ($found as $type => $ok) {
+                    if (!$ok) {
+                        $validator->errors()->add(
+                            "files.$subSiteId",
+                            "Falta el archivo requerido ($type) para el sub-sitio seleccionado."
+                        );
+                    }
+                }
             }
         });
     }
+
 }
