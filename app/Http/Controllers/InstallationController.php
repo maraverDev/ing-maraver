@@ -68,16 +68,14 @@ class InstallationController extends Controller
     {
         $this->authorize('view', $installation);
 
-        $installation->load([
-            'place',
-            'subSites',
-            'files.subSite',
-        ]);
+
         $installation->load([
             'place',
             'subSites',
             'files.subSite',
             'logs.user',
+            'issues.user',
+
         ]);
 
         return view('installations.show', compact('installation'));

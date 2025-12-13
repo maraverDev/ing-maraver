@@ -12,7 +12,9 @@ use App\Http\Controllers\InstallationFileController;
 require __DIR__ . '/auth.php';
 
 Route::middleware(['auth'])->group(function () {
-
+    Route::get('/dashboard', function () {
+        return redirect()->route('places.index');
+    })->name('dashboard');
     /**
      * READ-ONLY ACCESS
      * Roles: Admin, Technician, Viewer

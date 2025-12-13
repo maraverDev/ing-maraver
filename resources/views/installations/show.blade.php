@@ -217,5 +217,90 @@
     </div>
 </div>
 
+{{-- Incidencias técnicas --}}
+<div class="card mt-4">
+    <div class="card-header">
+        <strong>Incidencias técnicas</strong>
+    </div>
+
+    <div class="card-body">
+
+        @can('update', $installation)
+            <form method="POST" action="{{ route('installations.issues.store', $installation) }}" class="mb-4">
+                @csrf
+
+                <div class="mb-2">
+                    <input
+                        type="text"
+                        name="title"
+                        class="form-control"
+                        placeholder="Título de la incidencia"
+                        required
+                    >
+                </div>
+
+                <div class="mb-2">
+                    <textarea
+                        name="description"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Descripción técnica"
+                        required
+                    ></textarea>
+                </div>
+
+                <button class="btn btn-warning">
+                    Registrar incidencia
+                </button>
+            </form>
+        @endcan
+
+        @if($installation->issues->isEmpty())
+            <p class="text-muted mb-0">No hay incidencias registradas.</p>
+        @else
+            <ul class="list-group list-group-flush">
+                @foreach($installation->issues as $issue)
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ $issue->title }}</strong>
+                                <div class="text-muted small">
+                                    {{ $issue->user->name }} ·
+                                    {{ $issue->created_at->format('d/m/Y H:i') }}
+                                </div>
+                            </div>
+
+                            <span class="badge {{ $issue->status === 'open' ? 'bg-danger' : 'bg-success' }}">
+                                {{ $issue->status === 'open' ? 'Abierta' : 'Cerrada' }}
+                            </span>
+                        </div>
+
+                        <div class="mt-2">
+                            {{ $issue->description }}
+                        </div>
+
+                        @can('update', $installation)
+                            @if($issue->status === 'open')
+                                <form
+                                    method="POST"
+                                    action="{{ route('installation-issues.close', $issue) }}"
+                                    class="mt-2"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <button class="btn btn-sm btn-outline-success">
+                                        Cerrar incidencia
+                                    </button>
+                                </form>
+                            @endif
+                        @endcan
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+    </div>
+</div>
 
 @endsection
