@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreInstallationRequest;
+use App\Models\Installation;
+use App\Models\InstallationFile;
+use Illuminate\Support\Facades\DB;
+use App\Models\Place;
+
+class InstallationController extends Controller
+{
+    public function index()
+    {
+        $installations = Installation::with('place')
+            ->orderByDesc('installation_date')
+            ->get();
+
+        $places = Place::with('subSites')->orderBy('name')->get();
+
+        return view('installations.index', compact('installations', 'places'));
+    }
+
+
+    public function store(StoreInstallationRequest $request)
+    {
+        DB::transaction(function () use ($request) {
+
+            $installation = Installation::create([
+                'place_id' => $request->place_id,
+                'installation_date' => $request->installation_date,
+                'limiters_installed' => $request->limiters_installed,
+            ]);
+
+            $installation->subSites()->sync($request->sub_sites);
+
+            foreach ($request->sub_sites as $subSiteId) {
+
+                $files = $request->files[$subSiteId];
+
+                foreach ($files as $type => $file) {
+
+                    $path = $file->store(
+                        "installations/{$installation->id}/{$subSiteId}/{$type}"
+                    );
+
+                    InstallationFile::create([
+                        'installation_id' => $installation->id,
+                        'sub_site_id' => $subSiteId,
+                        'type' => $type,
+                        'original_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_size' => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                    ]);
+                }
+            }
+        });
+    }
+}
