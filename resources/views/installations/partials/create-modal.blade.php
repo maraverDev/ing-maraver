@@ -18,9 +18,10 @@
                                 onchange="onPlaceChange()">
                                 <option value="">Selecciona un lugar</option>
                                 @foreach($places as $place)
-                                    <option value="{{ $place->id }}" data-max="{{ $place->max_limiters }}">
+                                    <option value="{{ $place->id }}" data-max-limiters="{{ $place->max_limiters }}">
                                         {{ $place->name }}
                                     </option>
+
                                 @endforeach
                             </select>
                         </div>
@@ -32,8 +33,10 @@
 
                         <div class="col-md-3">
                             <label class="form-label">Limitadores</label>
-                            <input type="number" name="limiters_installed" id="limitersInput" class="form-control"
-                                min="1" required>
+                            <select name="limiters_installed" id="limiters" class="form-select" required>
+                                <option value="">Selecciona un lugar primero</option>
+                            </select>
+
                         </div>
                     </div>
 
@@ -57,42 +60,58 @@
     const places = @json($places);
 
     function onPlaceChange() {
-        const placeId = document.getElementById('placeSelect').value;
-        const container = document.getElementById('subSitesContainer');
-        container.innerHTML = '';
+        const placeSelect = document.getElementById('placeSelect');
+        const placeId = placeSelect.value;
 
-        if (!placeId) return;
+        const container = document.getElementById('subSitesContainer');
+        const limitersSelect = document.getElementById('limiters');
+
+        container.innerHTML = '';
+        limitersSelect.innerHTML = '';
+
+        if (!placeId) {
+            limitersSelect.innerHTML = '<option value="">Selecciona un lugar primero</option>';
+            return;
+        }
 
         const place = places.find(p => p.id == placeId);
-        document.getElementById('limitersInput').max = place.max_limiters;
 
+        // 1️⃣ Rellenar selector de limitadores
+        for (let i = 1; i <= place.max_limiters; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            limitersSelect.appendChild(option);
+        }
+
+        // 2️⃣ Renderizar sub-sitios
         place.sub_sites.forEach(subSite => {
             container.insertAdjacentHTML('beforeend', `
-            <div class="border rounded p-3 mb-3">
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox"
-                           name="sub_sites[]" value="${subSite.id}" id="ss_${subSite.id}">
-                    <label class="form-check-label" for="ss_${subSite.id}">
-                        ${subSite.name}
-                    </label>
-                </div>
+                <div class="border rounded p-3 mb-3">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox"
+                               name="sub_sites[]" value="${subSite.id}" id="ss_${subSite.id}">
+                        <label class="form-check-label" for="ss_${subSite.id}">
+                            ${subSite.name}
+                        </label>
+                    </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>CSV</label>
-                        <input type="file" name="files[${subSite.id}][csv]" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label>PDF Programación</label>
-                        <input type="file" name="files[${subSite.id}][pdf_programming]" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label>PDF Instalación</label>
-                        <input type="file" name="files[${subSite.id}][pdf_installation]" class="form-control">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>CSV</label>
+                            <input type="file" name="files[${subSite.id}][csv]" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>PDF Programación</label>
+                            <input type="file" name="files[${subSite.id}][pdf_programming]" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>PDF Instalación</label>
+                            <input type="file" name="files[${subSite.id}][pdf_installation]" class="form-control" required>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `);
+            `);
         });
     }
 </script>

@@ -1,6 +1,7 @@
 <div class="modal fade" id="createPlaceModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <form method="POST" action="{{ route('places.store') }}" enctype="multipart/form-data">
+        <form id="createInstallationForm" method="POST" action="{{ route('installations.store') }}"
+            enctype="multipart/form-data">
             @csrf
 
             <div class="modal-content">
@@ -65,4 +66,15 @@
         container.insertAdjacentHTML('beforeend', html);
         subSiteIndex++;
     }
+    document.getElementById('createInstallationForm').addEventListener('submit', function (e) {
+
+        const checkedSubSites = document.querySelectorAll('input[name="sub_sites[]"]:checked');
+
+        if (checkedSubSites.length === 0) {
+            e.preventDefault();
+            alert('Debes seleccionar al menos un sub-sitio antes de guardar la instalación.');
+            return false;
+        }
+
+    });
 </script>

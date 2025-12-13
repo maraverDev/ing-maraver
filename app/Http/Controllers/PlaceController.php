@@ -55,7 +55,10 @@ class PlaceController extends Controller
                     }
                 }
             }
+
         });
+        return redirect()->route('places.index');
+
     }
     public function show(Place $place)
     {

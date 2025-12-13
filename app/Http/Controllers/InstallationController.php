@@ -37,10 +37,9 @@ class InstallationController extends Controller
 
             foreach ($request->sub_sites as $subSiteId) {
 
-                $files = $request->files[$subSiteId];
+                $files = $request->file("files.$subSiteId");
 
                 foreach ($files as $type => $file) {
-
                     $path = $file->store(
                         "installations/{$installation->id}/{$subSiteId}/{$type}"
                     );
@@ -55,6 +54,7 @@ class InstallationController extends Controller
                         'mime_type' => $file->getMimeType(),
                     ]);
                 }
+
             }
             $installation->logs()->create([
                 'user_id' => auth()->id(),
@@ -63,6 +63,8 @@ class InstallationController extends Controller
             ]);
 
         });
+        return redirect()->route('installations.index');
+
     }
     public function show(Installation $installation)
     {
