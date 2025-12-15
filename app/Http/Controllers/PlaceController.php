@@ -57,8 +57,9 @@ class PlaceController extends Controller
             }
 
         });
-        return redirect()->route('places.index');
-
+        return redirect()
+            ->route('places.index')
+            ->with('success', 'Lugar creado correctamente');
     }
     public function show(Place $place)
     {

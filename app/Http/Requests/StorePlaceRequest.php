@@ -23,7 +23,11 @@ class StorePlaceRequest extends FormRequest
             'sub_sites.*.name' => ['required', 'string', 'max:180'],
 
             'sub_sites.*.files' => ['nullable', 'array'],
-            'sub_sites.*.files.*' => ['file'],
+            'sub_sites.*.files.*' => [
+                'file',
+                'mimes:pdf',
+                'max:10240' // 10 MB
+            ],
         ];
     }
 }
