@@ -4,15 +4,6 @@
 
 @section('content')
 
-    <!-- @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert">
-                    <span>&times;</span>
-                </button>
-            </div>
-        @endif -->
-
     <div class="card">
         <!--begin::Card header-->
         <div class="card-header border-0 pt-6">
@@ -65,8 +56,8 @@
     @include('installations.modals.create')
 
 @endsection
-
 @push('scripts')
+
     @if (session('success'))
         <script>
             Swal.fire({
@@ -78,6 +69,7 @@
             });
         </script>
     @endif
+
     @if ($errors->any())
         <script>
             $(document).ready(function () {
@@ -92,19 +84,20 @@
             });
         </script>
     @endif
-    <script>
-        let selectedSubSites = [];
 
+    <script>
+        /* ================================
+           CAMBIO DE LUGAR
+        ================================ */
         $('select[name="place_id"]').on('change', function () {
 
             const placeId = $(this).val();
 
-            // Reset
-            $('#subSitesContainer').html('');
-            $('#subSiteFilesContainer').html('');
+            $('#subSitesContainer').empty();
+            $('#subSiteFilesContainer').empty();
 
             const limitersSelect = $('#limitersSelect');
-            limitersSelect.html('').prop('disabled', true);
+            limitersSelect.prop('disabled', true).html('');
 
             if (!placeId) {
                 limitersSelect.append('<option value="">Selecciona un lugar primero</option>');
@@ -113,80 +106,205 @@
 
             $.get(`/places/${placeId}/sub-sites`, function (response) {
 
-                // --- LIMITADORES ---
+                // LIMITADORES
                 limitersSelect.append('<option value="">Selecciona</option>');
-
                 for (let i = 1; i <= response.max_limiters; i++) {
-                    limitersSelect.append(
-                        `<option value="${i}">${i}</option>`
-                    );
+                    limitersSelect.append(`<option value="${i}">${i}</option>`);
                 }
-
                 limitersSelect.prop('disabled', false);
 
-                // --- SUB-SITIOS ---
+                // SUB-SITIOS
                 response.sub_sites.forEach(subSite => {
 
                     const html = `
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input sub-site-checkbox"
-                                                   type="checkbox"
-                                                   name="sub_sites[]"
-                                                   value="${subSite.id}"
-                                                   data-name="${subSite.name}">
-                                            <label class="form-check-label">
-                                                ${subSite.name}
-                                            </label>
+                                <div class="sub-site-item mb-3">
+                                    <label class="sub-site-card">
+                                        <input type="checkbox"
+                                               class="sub-site-checkbox"
+                                               name="sub_sites[]"
+                                               value="${subSite.id}"
+                                               data-name="${subSite.name}">
+                                        <div class="sub-site-content">
+                                            <strong>${subSite.name}</strong>
                                         </div>
-                                    `;
+                                    </label>
+                                </div>
+                            `;
 
                     $('#subSitesContainer').append(html);
                 });
             });
         });
 
-        // Al marcar / desmarcar sub-sitios
+        /* ================================
+           SELECCIÓN DE SUB-SITIO
+        ================================ */
         $(document).on('change', '.sub-site-checkbox', function () {
 
             const subSiteId = $(this).val();
             const subSiteName = $(this).data('name');
 
             if (this.checked) {
-                selectedSubSites.push(subSiteId);
+
                 const filesHtml = `
-                                                    <div class="card mb-4" id="files-${subSiteId}">
-                                                        <div class="card-body">
-                                                            <h6 class="mb-3">${subSiteName}</h6>
+                            <div class="card mb-4 sub-site-files" id="files-${subSiteId}">
+                                <div class="card-body">
 
-                                                            <div class="form-group">
-                                                                <label>
-                                                                    Archivos del sub-sitio
-                                                                    <span class="text-danger">*</span>
-                                                                </label>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">${subSiteName}</h6>
+                                        <span class="badge badge-light-info">Esperando archivos</span>
+                                    </div>
 
-                                                                <input type="file"
-                                                                       name="files[${subSiteId}][]"
-                                                                       class="form-control"
-                                                                       multiple
-                                                                       accept=".csv,.pdf"
-                                                                       required>
+                                    <div class="form-group">
+                                        <label>
+                                            Archivos del sub-sitio <span class="text-danger">*</span>
+                                        </label>
 
-                                                                <small class="text-muted">
-                                                                    Debes subir:
-                                                                    1 CSV + 1 PDF de programación (SET) + 1 PDF de instalación (INS)
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                `;
+                                        <div class="custom-file-upload">
+                                            <button type="button"
+                                                    class="btn btn-light-primary btn-sm select-files-btn"
+                                                    data-subsite="${subSiteId}">
+                                                <i class="fas fa-paperclip mr-1"></i>
+                                                Subir archivos
+                                            </button>
+
+                                            <span class="selected-files text-muted ml-2">
+                                                Ningún archivo seleccionado
+                                            </span>
+
+                                            <input type="file"
+                                                   name="files[${subSiteId}][]"
+                                                   class="d-none sub-site-file-input"
+                                                   data-subsite="${subSiteId}"
+                                                   multiple
+                                                   accept=".csv,.pdf"
+                                                   >
+                                        </div>
+                                    </div>
+
+                                    <div class="file-status mt-3">
+                                        <span class="status-item datos">DATOS ❌</span>
+                                        <span class="status-item prog">PROG ❌</span>
+                                        <span class="status-item inst">INST ❌</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        `;
 
                 $('#subSiteFilesContainer').append(filesHtml);
 
             } else {
-                selectedSubSites = selectedSubSites.filter(id => id != subSiteId);
                 $(`#files-${subSiteId}`).remove();
             }
         });
+
+        /* ================================
+           BOTÓN BONITO → INPUT REAL
+        ================================ */
+        $(document).on('click', '.select-files-btn', function () {
+            const subSiteId = $(this).data('subsite');
+            $(`input.sub-site-file-input[data-subsite="${subSiteId}"]`).click();
+        });
+
+        /* ================================
+           DETECCIÓN DE ARCHIVOS
+        ================================ */
+        $(document).on('change', '.sub-site-file-input', function () {
+
+            const subSiteId = $(this).data('subsite');
+            const files = this.files;
+            const container = $(`#files-${subSiteId}`);
+
+            // Mostrar nº de archivos
+            container.find('.selected-files').text(
+                files.length
+                    ? `${files.length} archivo${files.length > 1 ? 's' : ''} seleccionado${files.length > 1 ? 's' : ''}`
+                    : 'Ningún archivo seleccionado'
+            );
+
+            let found = { datos: false, prog: false, inst: false };
+
+            Array.from(files).forEach(file => {
+                const name = file.name.toUpperCase();
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                if (ext === 'csv') found.datos = true;
+
+                if (ext === 'pdf' && (name.includes('PROG') || name.includes('SET'))) {
+                    found.prog = true;
+                }
+
+                if (ext === 'pdf' && (name.includes('INST') || name.includes('INS'))) {
+                    found.inst = true;
+                }
+            });
+
+            container.find('.status-item.datos')
+                .toggleClass('ok', found.datos)
+                .text(found.datos ? 'DATOS ✔' : 'DATOS ❌');
+
+            container.find('.status-item.prog')
+                .toggleClass('ok', found.prog)
+                .text(found.prog ? 'PROG ✔' : 'PROG ❌');
+
+            container.find('.status-item.inst')
+                .toggleClass('ok', found.inst)
+                .text(found.inst ? 'INST ✔' : 'INST ❌');
+
+            const badge = container.find('.badge');
+
+            if (found.datos && found.prog && found.inst) {
+                badge.removeClass('badge-light-info')
+                    .addClass('badge-light-success')
+                    .text('Archivos completos');
+            } else {
+                badge.removeClass('badge-light-success')
+                    .addClass('badge-light-info')
+                    .text('Faltan archivos');
+            }
+        });
+        $('form').on('submit', function (e) {
+
+            let incompleteSubSites = [];
+
+            $('.sub-site-files').each(function () {
+
+                const badgeText = $(this).find('.badge').text();
+
+                if (badgeText !== 'Archivos completos') {
+                    incompleteSubSites.push(
+                        $(this).find('h6').text().trim()
+                    );
+                }
+            });
+
+            // Si hay sub-sitios sin archivos completos
+            if (incompleteSubSites.length > 0) {
+                e.preventDefault();
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Instalación sin archivos completos',
+                    html: `
+                        <p>Los siguientes sub-sitios no tienen todos los archivos:</p>
+                        <ul style="text-align:left">
+                            ${incompleteSubSites.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                        <p>¿Deseas guardar la instalación igualmente?</p>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, guardar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#3699ff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        e.target.submit();
+                    }
+                });
+            }
+        });
+
     </script>
 
 @endpush

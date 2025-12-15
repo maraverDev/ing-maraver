@@ -73,6 +73,13 @@ class InstallationController extends Controller
                 }
 
             }
+            if (empty($request->files)) {
+                $installation->logs()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'Instalación sin archivos',
+                    'description' => 'Se creó la instalación sin subir archivos asociados.',
+                ]);
+            }
 
             $installation->logs()->create([
                 'user_id' => auth()->id(),

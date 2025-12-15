@@ -22,7 +22,7 @@ class StoreInstallationRequest extends FormRequest
             'limiters_installed' => ['required', 'integer', 'min:1'],
             'sub_sites' => ['required', 'array', 'min:1'],
             'sub_sites.*' => ['exists:sub_sites,id'],
-            'files' => ['required', 'array'],
+            'files' => ['nullable', 'array'],
         ];
     }
 

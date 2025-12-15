@@ -3,6 +3,67 @@
 
 <head>
     @include('layouts.metronic.head')
+
+    <style>
+        .custom-file-upload {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .custom-file-upload .btn {
+            display: flex;
+            align-items: center;
+        }
+
+        .selected-files {
+            font-size: 13px;
+        }
+
+        .file-status {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .status-item {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #f5f8fa;
+            color: #7e8299;
+            font-weight: 500;
+        }
+
+        .status-item.ok {
+            background: #e8fff3;
+            color: #0bb783;
+        }
+
+        .sub-site-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid #e4e6ef;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #fff;
+        }
+
+        .sub-site-card:hover {
+            background-color: #f5f8fa;
+            border-color: #3699ff;
+        }
+
+        .sub-site-card input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.1);
+        }
+
+        .sub-site-card input[type="checkbox"]:checked+.sub-site-content {
+            color: #3699ff;
+        }
+    </style>
 </head>
 
 <body
@@ -44,7 +105,7 @@
     <script src="{{ asset('metronic/assets/vendors/base/vendors.bundle.js') }}"></script>
     <script src="{{ asset('metronic/assets/demo/default/base/scripts.bundle.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <script src="https://kit.fontawesome.com/47d7c4b9a5.js" crossorigin="anonymous"></script>
     @stack('scripts')
 
 </body>
