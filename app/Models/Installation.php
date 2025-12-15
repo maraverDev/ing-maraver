@@ -47,4 +47,9 @@ class Installation extends Model
         return $this->hasMany(InstallationIssue::class)
             ->orderByDesc('created_at');
     }
+    public function creationLog()
+    {
+        return $this->hasOne(InstallationLog::class)
+            ->where('action', 'Creación de instalación');
+    }
 }

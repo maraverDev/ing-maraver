@@ -3,14 +3,14 @@
 @section('title', 'Lugares')
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    @endif
+    <!-- @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        @endif -->
 
     <div class="card">
         <!--begin::Card header-->
@@ -109,32 +109,32 @@
             const container = document.getElementById('subSitesContainer');
 
             const html = `
-                                                                <div class="card mb-3 sub-site">
-                                                                    <div class="card-body">
+                                                                        <div class="card mb-3 sub-site">
+                                                                            <div class="card-body">
 
-                                                                        <div class="d-flex justify-content-between mb-2">
-                                                                            <strong>Sub-sitio</strong>
-                                                                            <button type="button" class="btn btn-sm btn-danger remove-subsite">Eliminar</button>
+                                                                                <div class="d-flex justify-content-between mb-2">
+                                                                                    <strong>Sub-sitio</strong>
+                                                                                    <button type="button" class="btn btn-sm btn-danger remove-subsite">Eliminar</button>
+                                                                                </div>
+
+                                                                                <div class="form-group">
+                                                                                    <label>Nombre del sub-sitio<span class="text-danger">*</span></label>
+                                                                                    <input type="text" name="sub_sites[${subSiteIndex}][name]" class="form-control" required>
+
+                                                                                </div>
+
+                                                                                <div class="form-group">
+                                                                                    <label>Estudios acústicos (PDF)</label>
+                                                                                    <input type="file"
+                                                                                            name="sub_sites[${subSiteIndex}][studies][]"
+                                                                                            class="form-control"
+                                                                                            multiple
+                                                                                            accept=".pdf,application/pdf">
+                                                                                </div>
+
+                                                                            </div>
                                                                         </div>
-
-                                                                        <div class="form-group">
-                                                                            <label>Nombre del sub-sitio<span class="text-danger">*</span></label>
-                                                                            <input type="text" name="sub_sites[${subSiteIndex}][name]" class="form-control" required>
-
-                                                                        </div>
-
-                                                                        <div class="form-group">
-                                                                            <label>Estudios acústicos (PDF)</label>
-                                                                            <input type="file"
-                                                                                    name="sub_sites[${subSiteIndex}][studies][]"
-                                                                                    class="form-control"
-                                                                                    multiple
-                                                                                    accept=".pdf,application/pdf">
-                                                                        </div>
-
-                                                                    </div>
-                                                                </div>
-                                                            `;
+                                                                    `;
 
             container.insertAdjacentHTML('beforeend', html);
             subSiteIndex++;

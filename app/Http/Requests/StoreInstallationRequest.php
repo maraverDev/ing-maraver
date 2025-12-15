@@ -50,20 +50,32 @@ class StoreInstallationRequest extends FormRequest
                         $found['csv'] = true;
                     }
 
-                    if ($ext === 'pdf' && str_contains($name, 'SET')) {
-                        $found['pdf_programming'] = true;
+                    if ($ext === 'pdf') {
+
+                        if (
+                            str_contains($name, 'SET') ||
+                            str_contains($name, 'PROG') ||
+                            str_contains($name, 'PROGRAM')
+                        ) {
+                            $found['pdf_programming'] = true;
+                        }
+
+                        if (
+                            str_contains($name, 'INS') ||
+                            str_contains($name, 'INSTAL')
+                        ) {
+                            $found['pdf_installation'] = true;
+                        }
                     }
 
-                    if ($ext === 'pdf' && str_contains($name, 'INS')) {
-                        $found['pdf_installation'] = true;
-                    }
                 }
 
                 foreach ($found as $type => $ok) {
                     if (!$ok) {
                         $validator->errors()->add(
                             "files.$subSiteId",
-                            "Falta el archivo requerido ($type) para el sub-sitio seleccionado."
+                            "En el sub-sitio seleccionado debes subir exactamente:
+     1 CSV, 1 PDF de programación (SET) y 1 PDF de instalación (INS)."
                         );
                     }
                 }

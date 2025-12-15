@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
         // Places
         Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
         Route::get('/places/{place}', [PlaceController::class, 'show'])->name('places.show');
+        Route::get('/places/{place}/sub-sites', [PlaceController::class, 'subSites']);
 
         // Installations
         Route::get('/installations/{installation}', [InstallationController::class, 'show'])

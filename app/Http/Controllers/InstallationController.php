@@ -13,7 +13,10 @@ class InstallationController extends Controller
 {
     public function index()
     {
-        $installations = Installation::with('place')
+        $installations = Installation::with([
+            'place',
+            'creationLog.user', // 👈 usuario creador desde logs
+        ])
             ->orderByDesc('installation_date')
             ->get();
 
@@ -78,7 +81,9 @@ class InstallationController extends Controller
             ]);
         });
 
-        return redirect()->route('installations.index');
+        return redirect()
+            ->route('installations.index')
+            ->with('success', 'Instalación creada correctamente');
     }
     public function show(Installation $installation)
     {
