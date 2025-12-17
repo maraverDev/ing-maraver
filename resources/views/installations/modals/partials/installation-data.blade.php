@@ -1,6 +1,6 @@
 <div class="row">
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="form-group">
             <label>Lugar <span class="text-danger">*</span></label>
             <select name="place_id" class="form-control" required>
@@ -12,14 +12,14 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="form-group">
             <label>Fecha <span class="text-danger">*</span></label>
-            <input type="date" name="installation_date" class="form-control" required>
+            <input type="datetime-local" name="installation_date" class="form-control" required>
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="form-group">
             <label>
                 Limitadores <span class="text-danger">*</span>

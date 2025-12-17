@@ -11,16 +11,48 @@ use Illuminate\Http\Request;
 
 class InstallationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Installation::with([
+            'place',
+            'creationLog.user',
+            'subSites',
+        ]);
+
+        // Buscador por nombre de lugar
+        if ($request->filled('search')) {
+            $query->whereHas('place', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filtro por lugar exacto
+        if ($request->filled('place_id')) {
+            $query->where('place_id', $request->place_id);
+        }
+
+        // Filtro por fecha desde
+        if ($request->filled('from')) {
+            $query->whereDate('installation_date', '>=', $request->from);
+        }
+
+        // Filtro por fecha hasta
+        if ($request->filled('to')) {
+            $query->whereDate('installation_date', '<=', $request->to);
+        }
+
         $installations = Installation::with([
             'place',
-            'creationLog.user', // 👈 usuario creador desde logs
+            'creationLog.user',
+            'subSites',
+            'files', // 👈 CLAVE
         ])
             ->orderByDesc('installation_date')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
-        $places = Place::with('subSites')->orderBy('name')->get();
+
+        $places = Place::orderBy('name')->get();
 
         return view('installations.index', compact('installations', 'places'));
     }

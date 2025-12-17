@@ -6,21 +6,50 @@
 
     <div class="card">
         <!--begin::Card header-->
-        <div class="card-header border-0 pt-6">
-            <div class="card-title">
-                <h3 class="fw-bold m-0">Control de instalaciones</h3>
+
+        <div class="card-header border-0 pt-6 d-flex justify-content-between align-items-center">
+            <div class="card-title d-flex flex-column">
+                <h3 class="fw-bold m-0 text-dark">
+                    Control de instalaciones
+                </h3>
+                <span class="text-muted fs-7">
+                    Registro y seguimiento de instalaciones realizadas
+                </span>
+            </div>
+            {{-- BOTÓN FILTROS --}}
+            <div class="dropdown">
+                @php
+                    $filtersActive = collect(['search', 'place_id', 'from', 'to'])
+                        ->filter(fn($f) => request()->filled($f))
+                        ->count();
+                @endphp
+                <button class="btn btn-light-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-filter mr-1"></i>
+                    Filtros
+                    @if($filtersActive)
+                        <span class="badge badge-primary ml-1">{{ $filtersActive }}</span>
+                    @endif
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-right p-4" style="min-width: 320px;">
+                    @include('installations.partials.filters')
+                </div>
             </div>
 
-            <div class="card-toolbar">
-                <button class="btn btn-primary" data-toggle="modal" data-target="#modalCreateInstallation">
-                    Nueva instalación
-                </button>
-            </div>
+            {{-- NUEVA INSTALACIÓN --}}
+            <button class="btn btn-primary" data-toggle="modal" data-target="#modalCreateInstallation">
+                Nueva instalación
+            </button>
+
         </div>
+
+
         <!--end::Card header-->
 
         <!--begin::Card body-->
         <div class="card-body py-4">
+
             <table class="table align-middle table-row-dashed fs-6 gy-5">
                 <thead>
                     <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
@@ -28,16 +57,33 @@
                         <th>Lugar</th>
                         <th>Sub-sitios</th>
                         <th>Limitadores</th>
+                        <th>Estado</th>
                         <th>Técnico</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
                     @forelse($installations as $installation)
-                        <tr>
-                            <td>{{ $installation->installation_date }}</td>
+                        <tr class="installation-row" data-href="{{ route('installations.show', $installation) }}"
+                            style="cursor:pointer">
+                            <td>{{ $installation->installation_date->format('d/m/Y H:i') }}</td>
                             <td>{{ $installation->place->name }}</td>
                             <td>{{ $installation->subSites->count() }}</td>
                             <td>{{ $installation->limiters_installed }}</td>
+                            {{-- ESTADO --}}
+                            <td>
+                                @if($installation->files && $installation->files->count() > 0)
+                                    <span class="badge badge-light-success text-success fw-bold">
+                                        Completa
+                                    </span>
+                                @else
+                                    <span class="badge badge-light-warning text-warning fw-bold">
+                                        Sin archivos
+                                    </span>
+                                @endif
+                            </td>
+
+
+
                             <td>{{ $installation->creationLog->user->name ?? '-' }}</td>
                         </tr>
                     @empty
@@ -49,6 +95,16 @@
                     @endforelse
                 </tbody>
             </table>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted">
+                    Mostrando {{ $installations->firstItem() }}–{{ $installations->lastItem() }}
+                    de {{ $installations->total() }} instalaciones
+                </div>
+
+                {{ $installations->links('pagination::bootstrap-4') }}
+            </div>
+
         </div>
         <!--end::Card body-->
     </div>
@@ -117,19 +173,19 @@
                 response.sub_sites.forEach(subSite => {
 
                     const html = `
-                                <div class="sub-site-item mb-3">
-                                    <label class="sub-site-card">
-                                        <input type="checkbox"
-                                               class="sub-site-checkbox"
-                                               name="sub_sites[]"
-                                               value="${subSite.id}"
-                                               data-name="${subSite.name}">
-                                        <div class="sub-site-content">
-                                            <strong>${subSite.name}</strong>
-                                        </div>
-                                    </label>
-                                </div>
-                            `;
+                                                                                                                                                                                                                                                <div class="sub-site-item mb-3">
+                                                                                                                                                                                                                                                    <label class="sub-site-card">
+                                                                                                                                                                                                                                                        <input type="checkbox"
+                                                                                                                                                                                                                                                               class="sub-site-checkbox"
+                                                                                                                                                                                                                                                               name="sub_sites[]"
+                                                                                                                                                                                                                                                               value="${subSite.id}"
+                                                                                                                                                                                                                                                               data-name="${subSite.name}">
+                                                                                                                                                                                                                                                        <div class="sub-site-content">
+                                                                                                                                                                                                                                                            <strong>${subSite.name}</strong>
+                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                    </label>
+                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                            `;
 
                     $('#subSitesContainer').append(html);
                 });
@@ -147,50 +203,50 @@
             if (this.checked) {
 
                 const filesHtml = `
-                            <div class="card mb-4 sub-site-files" id="files-${subSiteId}">
-                                <div class="card-body">
+                                                                                                                                                                                                                                            <div class="card mb-4 sub-site-files" id="files-${subSiteId}">
+                                                                                                                                                                                                                                                <div class="card-body">
 
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0">${subSiteName}</h6>
-                                        <span class="badge badge-light-info">Esperando archivos</span>
-                                    </div>
+                                                                                                                                                                                                                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                                                                                                                                                                                                        <h6 class="mb-0">${subSiteName}</h6>
+                                                                                                                                                                                                                                                        <span class="badge badge-light-info">Esperando archivos</span>
+                                                                                                                                                                                                                                                    </div>
 
-                                    <div class="form-group">
-                                        <label>
-                                            Archivos del sub-sitio <span class="text-danger">*</span>
-                                        </label>
+                                                                                                                                                                                                                                                    <div class="form-group">
+                                                                                                                                                                                                                                                        <label>
+                                                                                                                                                                                                                                                            Archivos del sub-sitio <span class="text-danger">*</span>
+                                                                                                                                                                                                                                                        </label>
 
-                                        <div class="custom-file-upload">
-                                            <button type="button"
-                                                    class="btn btn-light-primary btn-sm select-files-btn"
-                                                    data-subsite="${subSiteId}">
-                                                <i class="fas fa-paperclip mr-1"></i>
-                                                Subir archivos
-                                            </button>
+                                                                                                                                                                                                                                                        <div class="custom-file-upload">
+                                                                                                                                                                                                                                                            <button type="button"
+                                                                                                                                                                                                                                                                    class="btn btn-light-primary btn-sm select-files-btn"
+                                                                                                                                                                                                                                                                    data-subsite="${subSiteId}">
+                                                                                                                                                                                                                                                                <i class="fas fa-paperclip mr-1"></i>
+                                                                                                                                                                                                                                                                Subir archivos
+                                                                                                                                                                                                                                                            </button>
 
-                                            <span class="selected-files text-muted ml-2">
-                                                Ningún archivo seleccionado
-                                            </span>
+                                                                                                                                                                                                                                                            <span class="selected-files text-muted ml-2">
+                                                                                                                                                                                                                                                                Ningún archivo seleccionado
+                                                                                                                                                                                                                                                            </span>
 
-                                            <input type="file"
-                                                   name="files[${subSiteId}][]"
-                                                   class="d-none sub-site-file-input"
-                                                   data-subsite="${subSiteId}"
-                                                   multiple
-                                                   accept=".csv,.pdf"
-                                                   >
-                                        </div>
-                                    </div>
+                                                                                                                                                                                                                                                            <input type="file"
+                                                                                                                                                                                                                                                                   name="files[${subSiteId}][]"
+                                                                                                                                                                                                                                                                   class="d-none sub-site-file-input"
+                                                                                                                                                                                                                                                                   data-subsite="${subSiteId}"
+                                                                                                                                                                                                                                                                   multiple
+                                                                                                                                                                                                                                                                   accept=".csv,.pdf"
+                                                                                                                                                                                                                                                                   >
+                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                    </div>
 
-                                    <div class="file-status mt-3">
-                                        <span class="status-item datos">DATOS ❌</span>
-                                        <span class="status-item prog">PROG ❌</span>
-                                        <span class="status-item inst">INST ❌</span>
-                                    </div>
+                                                                                                                                                                                                                                                    <div class="file-status mt-3">
+                                                                                                                                                                                                                                                        <span class="status-item datos">DATOS ❌</span>
+                                                                                                                                                                                                                                                        <span class="status-item prog">PROG ❌</span>
+                                                                                                                                                                                                                                                        <span class="status-item inst">INST ❌</span>
+                                                                                                                                                                                                                                                    </div>
 
-                                </div>
-                            </div>
-                        `;
+                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                        `;
 
                 $('#subSiteFilesContainer').append(filesHtml);
 
@@ -287,12 +343,12 @@
                     icon: 'warning',
                     title: 'Instalación sin archivos completos',
                     html: `
-                        <p>Los siguientes sub-sitios no tienen todos los archivos:</p>
-                        <ul style="text-align:left">
-                            ${incompleteSubSites.map(s => `<li>${s}</li>`).join('')}
-                        </ul>
-                        <p>¿Deseas guardar la instalación igualmente?</p>
-                    `,
+                                                                                                                                                                                                                                        <p>Los siguientes sub-sitios no tienen todos los archivos:</p>
+                                                                                                                                                                                                                                        <ul style="text-align:left">
+                                                                                                                                                                                                                                            ${incompleteSubSites.map(s => `<li>${s}</li>`).join('')}
+                                                                                                                                                                                                                                        </ul>
+                                                                                                                                                                                                                                        <p>¿Deseas guardar la instalación igualmente?</p>
+                                                                                                                                                                                                                                    `,
                     showCancelButton: true,
                     confirmButtonText: 'Sí, guardar',
                     cancelButtonText: 'Cancelar',
@@ -303,6 +359,15 @@
                     }
                 });
             }
+        });
+        $(document).on('click', '.installation-row', function (e) {
+
+            // Evitar conflictos con selects, botones, links, etc.
+            if ($(e.target).closest('a, button, input, label').length) {
+                return;
+            }
+
+            window.location = $(this).data('href');
         });
 
     </script>
