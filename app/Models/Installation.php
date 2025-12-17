@@ -52,5 +52,27 @@ class Installation extends Model
         return $this->hasOne(InstallationLog::class)
             ->where('action', 'Creación de instalación');
     }
+    public function getExpectedFilesCountAttribute(): int
+    {
+        return $this->subSites->count() * 3;
+    }
+
+    public function getUploadedFilesCountAttribute(): int
+    {
+        return $this->files ? $this->files->count() : 0;
+    }
+
+    public function getInstallationStatusAttribute(): string
+    {
+        if ($this->uploaded_files_count === 0) {
+            return 'empty';
+        }
+
+        if ($this->uploaded_files_count < $this->expected_files_count) {
+            return 'partial';
+        }
+
+        return 'complete';
+    }
 
 }

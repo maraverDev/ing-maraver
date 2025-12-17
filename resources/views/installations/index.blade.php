@@ -70,16 +70,28 @@
                             <td>{{ $installation->subSites->count() }}</td>
                             <td>{{ $installation->limiters_installed }}</td>
                             {{-- ESTADO --}}
-                            <td>
-                                @if($installation->files && $installation->files->count() > 0)
-                                    <span class="badge badge-light-success text-success fw-bold">
-                                        Completa
-                                    </span>
-                                @else
-                                    <span class="badge badge-light-warning text-warning fw-bold">
-                                        Sin archivos
-                                    </span>
-                                @endif
+                            <td class="text-dark">
+                                @switch($installation->installation_status)
+
+                                    @case('complete')
+                                        <span class="badge badge-light-success text-success fw-bold">
+                                            Completa ({{ $installation->uploaded_files_count }})
+                                        </span>
+                                        @break
+
+                                    @case('partial')
+                                        <span class="badge badge-light-warning text-warning fw-bold">
+                                            Incompleta ({{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }})
+                                        </span>
+                                        @break
+
+                                    @case('empty')
+                                        <span class="badge badge-light-danger text-danger fw-bold">
+                                            Sin archivos
+                                        </span>
+                                        @break
+
+                                @endswitch
                             </td>
 
 
@@ -173,19 +185,19 @@
                 response.sub_sites.forEach(subSite => {
 
                     const html = `
-                                                                                                                                                                                                                                                <div class="sub-site-item mb-3">
-                                                                                                                                                                                                                                                    <label class="sub-site-card">
-                                                                                                                                                                                                                                                        <input type="checkbox"
-                                                                                                                                                                                                                                                               class="sub-site-checkbox"
-                                                                                                                                                                                                                                                               name="sub_sites[]"
-                                                                                                                                                                                                                                                               value="${subSite.id}"
-                                                                                                                                                                                                                                                               data-name="${subSite.name}">
-                                                                                                                                                                                                                                                        <div class="sub-site-content">
-                                                                                                                                                                                                                                                            <strong>${subSite.name}</strong>
+                                                                                                                                                                                                                                                        <div class="sub-site-item mb-3">
+                                                                                                                                                                                                                                                            <label class="sub-site-card">
+                                                                                                                                                                                                                                                                <input type="checkbox"
+                                                                                                                                                                                                                                                                       class="sub-site-checkbox"
+                                                                                                                                                                                                                                                                       name="sub_sites[]"
+                                                                                                                                                                                                                                                                       value="${subSite.id}"
+                                                                                                                                                                                                                                                                       data-name="${subSite.name}">
+                                                                                                                                                                                                                                                                <div class="sub-site-content">
+                                                                                                                                                                                                                                                                    <strong>${subSite.name}</strong>
+                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                            </label>
                                                                                                                                                                                                                                                         </div>
-                                                                                                                                                                                                                                                    </label>
-                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                            `;
+                                                                                                                                                                                                                                                    `;
 
                     $('#subSitesContainer').append(html);
                 });
@@ -203,50 +215,50 @@
             if (this.checked) {
 
                 const filesHtml = `
-                                                                                                                                                                                                                                            <div class="card mb-4 sub-site-files" id="files-${subSiteId}">
-                                                                                                                                                                                                                                                <div class="card-body">
+                                                                                                                                                                                                                                                    <div class="card mb-4 sub-site-files" id="files-${subSiteId}">
+                                                                                                                                                                                                                                                        <div class="card-body">
 
-                                                                                                                                                                                                                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                                                                                                                                                                                                        <h6 class="mb-0">${subSiteName}</h6>
-                                                                                                                                                                                                                                                        <span class="badge badge-light-info">Esperando archivos</span>
-                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                                                                                                                                                                                                                <h6 class="mb-0">${subSiteName}</h6>
+                                                                                                                                                                                                                                                                <span class="badge badge-light-info">Esperando archivos</span>
+                                                                                                                                                                                                                                                            </div>
 
-                                                                                                                                                                                                                                                    <div class="form-group">
-                                                                                                                                                                                                                                                        <label>
-                                                                                                                                                                                                                                                            Archivos del sub-sitio <span class="text-danger">*</span>
-                                                                                                                                                                                                                                                        </label>
+                                                                                                                                                                                                                                                            <div class="form-group">
+                                                                                                                                                                                                                                                                <label>
+                                                                                                                                                                                                                                                                    Archivos del sub-sitio <span class="text-danger">*</span>
+                                                                                                                                                                                                                                                                </label>
 
-                                                                                                                                                                                                                                                        <div class="custom-file-upload">
-                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                    class="btn btn-light-primary btn-sm select-files-btn"
-                                                                                                                                                                                                                                                                    data-subsite="${subSiteId}">
-                                                                                                                                                                                                                                                                <i class="fas fa-paperclip mr-1"></i>
-                                                                                                                                                                                                                                                                Subir archivos
-                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                <div class="custom-file-upload">
+                                                                                                                                                                                                                                                                    <button type="button"
+                                                                                                                                                                                                                                                                            class="btn btn-light-primary btn-sm select-files-btn"
+                                                                                                                                                                                                                                                                            data-subsite="${subSiteId}">
+                                                                                                                                                                                                                                                                        <i class="fas fa-paperclip mr-1"></i>
+                                                                                                                                                                                                                                                                        Subir archivos
+                                                                                                                                                                                                                                                                    </button>
 
-                                                                                                                                                                                                                                                            <span class="selected-files text-muted ml-2">
-                                                                                                                                                                                                                                                                Ningún archivo seleccionado
-                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                    <span class="selected-files text-muted ml-2">
+                                                                                                                                                                                                                                                                        Ningún archivo seleccionado
+                                                                                                                                                                                                                                                                    </span>
 
-                                                                                                                                                                                                                                                            <input type="file"
-                                                                                                                                                                                                                                                                   name="files[${subSiteId}][]"
-                                                                                                                                                                                                                                                                   class="d-none sub-site-file-input"
-                                                                                                                                                                                                                                                                   data-subsite="${subSiteId}"
-                                                                                                                                                                                                                                                                   multiple
-                                                                                                                                                                                                                                                                   accept=".csv,.pdf"
-                                                                                                                                                                                                                                                                   >
+                                                                                                                                                                                                                                                                    <input type="file"
+                                                                                                                                                                                                                                                                           name="files[${subSiteId}][]"
+                                                                                                                                                                                                                                                                           class="d-none sub-site-file-input"
+                                                                                                                                                                                                                                                                           data-subsite="${subSiteId}"
+                                                                                                                                                                                                                                                                           multiple
+                                                                                                                                                                                                                                                                           accept=".csv,.pdf"
+                                                                                                                                                                                                                                                                           >
+                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                            </div>
+
+                                                                                                                                                                                                                                                            <div class="file-status mt-3">
+                                                                                                                                                                                                                                                                <span class="status-item datos">DATOS ❌</span>
+                                                                                                                                                                                                                                                                <span class="status-item prog">PROG ❌</span>
+                                                                                                                                                                                                                                                                <span class="status-item inst">INST ❌</span>
+                                                                                                                                                                                                                                                            </div>
+
                                                                                                                                                                                                                                                         </div>
                                                                                                                                                                                                                                                     </div>
-
-                                                                                                                                                                                                                                                    <div class="file-status mt-3">
-                                                                                                                                                                                                                                                        <span class="status-item datos">DATOS ❌</span>
-                                                                                                                                                                                                                                                        <span class="status-item prog">PROG ❌</span>
-                                                                                                                                                                                                                                                        <span class="status-item inst">INST ❌</span>
-                                                                                                                                                                                                                                                    </div>
-
-                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                        `;
+                                                                                                                                                                                                                                                `;
 
                 $('#subSiteFilesContainer').append(filesHtml);
 
@@ -343,12 +355,12 @@
                     icon: 'warning',
                     title: 'Instalación sin archivos completos',
                     html: `
-                                                                                                                                                                                                                                        <p>Los siguientes sub-sitios no tienen todos los archivos:</p>
-                                                                                                                                                                                                                                        <ul style="text-align:left">
-                                                                                                                                                                                                                                            ${incompleteSubSites.map(s => `<li>${s}</li>`).join('')}
-                                                                                                                                                                                                                                        </ul>
-                                                                                                                                                                                                                                        <p>¿Deseas guardar la instalación igualmente?</p>
-                                                                                                                                                                                                                                    `,
+                                                                                                                                                                                                                                                <p>Los siguientes sub-sitios no tienen todos los archivos:</p>
+                                                                                                                                                                                                                                                <ul style="text-align:left">
+                                                                                                                                                                                                                                                    ${incompleteSubSites.map(s => `<li>${s}</li>`).join('')}
+                                                                                                                                                                                                                                                </ul>
+                                                                                                                                                                                                                                                <p>¿Deseas guardar la instalación igualmente?</p>
+                                                                                                                                                                                                                                            `,
                     showCancelButton: true,
                     confirmButtonText: 'Sí, guardar',
                     cancelButtonText: 'Cancelar',

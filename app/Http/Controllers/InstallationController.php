@@ -45,12 +45,11 @@ class InstallationController extends Controller
             'place',
             'creationLog.user',
             'subSites',
-            'files', // 👈 CLAVE
+            'files',
         ])
             ->orderByDesc('installation_date')
             ->paginate(15)
             ->withQueryString();
-
 
         $places = Place::orderBy('name')->get();
 
