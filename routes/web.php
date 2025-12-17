@@ -12,9 +12,12 @@ use App\Http\Controllers\InstallationFileController;
 require __DIR__ . '/auth.php';
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return redirect()->route('places.index');
-    })->name('dashboard');
+    // Route::get('/dashboard', function () {
+    //     return redirect()->route('places.index');
+    // })->name('dashboard');
+
+    Route::get('/', fn() => view('dashboard'))->name('dashboard');
+
     /**
      * READ-ONLY ACCESS
      * Roles: Admin, Technician, Viewer
@@ -23,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
         // Places
         Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
         Route::get('/places/{place}', [PlaceController::class, 'show'])->name('places.show');
+        Route::get('/places/{place}/sub-sites', [PlaceController::class, 'subSites']);
 
         // Installations
         Route::get('/installations/{installation}', [InstallationController::class, 'show'])

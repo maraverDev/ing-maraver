@@ -11,13 +11,48 @@ use Illuminate\Http\Request;
 
 class InstallationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $installations = Installation::with('place')
-            ->orderByDesc('installation_date')
-            ->get();
+        $query = Installation::with([
+            'place',
+            'creationLog.user',
+            'subSites',
+        ]);
 
-        $places = Place::with('subSites')->orderBy('name')->get();
+        // Buscador por nombre de lugar
+        if ($request->filled('search')) {
+            $query->whereHas('place', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filtro por lugar exacto
+        if ($request->filled('place_id')) {
+            $query->where('place_id', $request->place_id);
+        }
+
+        // Filtro por fecha desde
+        if ($request->filled('from')) {
+            $query->whereDate('installation_date', '>=', $request->from);
+        }
+
+        // Filtro por fecha hasta
+        if ($request->filled('to')) {
+            $query->whereDate('installation_date', '<=', $request->to);
+        }
+
+        $installations = Installation::with([
+            'place',
+            'creationLog.user',
+            'subSites',
+            'files', // 👈 CLAVE
+        ])
+            ->orderByDesc('installation_date')
+            ->paginate(15)
+            ->withQueryString();
+
+
+        $places = Place::orderBy('name')->get();
 
         return view('installations.index', compact('installations', 'places'));
     }
@@ -70,6 +105,13 @@ class InstallationController extends Controller
                 }
 
             }
+            if (empty($request->files)) {
+                $installation->logs()->create([
+                    'user_id' => auth()->id(),
+                    'action' => 'Instalación sin archivos',
+                    'description' => 'Se creó la instalación sin subir archivos asociados.',
+                ]);
+            }
 
             $installation->logs()->create([
                 'user_id' => auth()->id(),
@@ -78,7 +120,9 @@ class InstallationController extends Controller
             ]);
         });
 
-        return redirect()->route('installations.index');
+        return redirect()
+            ->route('installations.index')
+            ->with('success', 'Instalación creada correctamente');
     }
     public function show(Installation $installation)
     {

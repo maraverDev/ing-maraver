@@ -57,8 +57,9 @@ class PlaceController extends Controller
             }
 
         });
-        return redirect()->route('places.index');
-
+        return redirect()
+            ->route('places.index')
+            ->with('success', 'Lugar creado correctamente');
     }
     public function show(Place $place)
     {
@@ -68,4 +69,12 @@ class PlaceController extends Controller
 
         return view('places.show', compact('place'));
     }
+    public function subSites(Place $place)
+    {
+        return response()->json([
+            'max_limiters' => $place->max_limiters,
+            'sub_sites' => $place->subSites()->select('id', 'name')->get(),
+        ]);
+    }
+
 }
