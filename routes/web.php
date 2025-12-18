@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/acoustic-studies/{study}/download', [AcousticStudyController::class, 'download'])
             ->name('acoustic-studies.download');
 
+        Route::post('/sub-sites/{subSite}/acoustic-studies', [AcousticStudyController::class, 'store'])
+            ->name('acoustic-studies.store');
+
         Route::get('/installation-files/{file}/download', [InstallationFileController::class, 'download'])
             ->name('installation-files.download');
     });

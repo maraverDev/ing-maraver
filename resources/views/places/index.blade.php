@@ -4,13 +4,13 @@
 
 @section('content')
     <!-- @if (session('success'))
-                                                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                                                        {{ session('success') }}
-                                                                        <button type="button" class="close" data-dismiss="alert">
-                                                                            <span>&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                @endif -->
+                                                                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                                                {{ session('success') }}
+                                                                                <button type="button" class="close" data-dismiss="alert">
+                                                                                    <span>&times;</span>
+                                                                                </button>
+                                                                            </div>
+                                                                        @endif -->
 
     <div class="card">
         <!--begin::Card header-->
@@ -37,9 +37,39 @@
             <table class="table align-middle table-row-dashed fs-6 gy-5">
                 <thead>
                     <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                        <th>Nombre</th>
-                        <th>Sub-sitios</th>
-                        <th>Limitadores</th>
+                        <th>
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('sort') == 'name' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
+                                class="text-muted text-hover-primary">
+                                Nombre
+                                @if (request('sort', 'name') == 'name')
+                                    <i class="fas fa-sort-{{ request('direction', 'asc') == 'asc' ? 'up' : 'down' }} ml-1"></i>
+                                @else
+                                    <i class="fas fa-sort ml-1 text-muted opacity-50"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'sub_sites_count', 'direction' => request('sort') == 'sub_sites_count' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
+                                class="text-muted text-hover-primary">
+                                Sub-sitios
+                                @if (request('sort') == 'sub_sites_count')
+                                    <i class="fas fa-sort-{{ request('direction', 'asc') == 'asc' ? 'up' : 'down' }} ml-1"></i>
+                                @else
+                                    <i class="fas fa-sort ml-1 text-muted opacity-50"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'max_limiters', 'direction' => request('sort') == 'max_limiters' && request('direction') == 'asc' ? 'desc' : 'asc']) }}"
+                                class="text-muted text-hover-primary">
+                                Limitadores
+                                @if (request('sort') == 'max_limiters')
+                                    <i class="fas fa-sort-{{ request('direction', 'asc') == 'asc' ? 'up' : 'down' }} ml-1"></i>
+                                @else
+                                    <i class="fas fa-sort ml-1 text-muted opacity-50"></i>
+                                @endif
+                            </a>
+                        </th>
                         <th>Estudios</th>
                         <th class="text-end">Acciones</th>
                     </tr>
@@ -68,6 +98,15 @@
                     @endforelse
                 </tbody>
             </table>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted">
+                    Mostrando {{ $places->firstItem() }}–{{ $places->lastItem() }}
+                    de {{ $places->total() }} lugares
+                </div>
+
+                {{ $places->links('pagination::bootstrap-4') }}
+            </div>
         </div>
         <!--end::Card body-->
     </div>
@@ -114,32 +153,36 @@
             const container = document.getElementById('subSitesContainer');
 
             const html = `
-                                                                                                                                <div class="card mb-3 sub-site">
-                                                                                                                                    <div class="card-body">
+                        <div class="card mb-3 sub-site">
+                            <div class="card-body">
 
-                                                                                                                                        <div class="d-flex justify-content-between mb-2">
-                                                                                                                                            <strong>Sub-sitio</strong>
-                                                                                                                                            <button type="button" class="btn btn-sm btn-danger remove-subsite">Eliminar</button>
-                                                                                                                                        </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Sub-sitio</strong>
+                                    <button type="button" class="btn btn-sm btn-danger remove-subsite">Eliminar</button>
+                                </div>
 
-                                                                                                                                        <div class="form-group">
-                                                                                                                                            <label>Nombre del sub-sitio<span class="text-danger">*</span></label>
-                                                                                                                                            <input type="text" name="sub_sites[${subSiteIndex}][name]" class="form-control" required>
+                                <div class="form-group mb-2">
+                                    <label>Nombre del sub-sitio<span class="text-danger">*</span></label>
+                                    <input type="text" name="sub_sites[${subSiteIndex}][name]" class="form-control" required>
+                                </div>
 
-                                                                                                                                        </div>
+                                <div class="alert alert-light-info p-2 mb-2 fs-8">
+                                    <i class="la la-info-circle text-info me-1"></i>
+                                    Evita subir archivos con el mismo nombre para este sub-sitio.
+                                </div>
 
-                                                                                                                                        <div class="form-group">
-                                                                                                                                            <label>Estudios acústicos (PDF)</label>
-                                                                                                                                            <input type="file"
-                                                                                                                                                    name="sub_sites[${subSiteIndex}][studies][]"
-                                                                                                                                                    class="form-control"
-                                                                                                                                                    multiple
-                                                                                                                                                    accept=".pdf,application/pdf">
-                                                                                                                                        </div>
+                                    <div class="form-group">
+                                    <label>Estudios acústicos (PDF)</label>
+                                    <input type="file"
+                                            name="sub_sites[${subSiteIndex}][files][]"
+                                            class="form-control"
+                                            multiple
+                                            accept=".pdf,application/pdf">
+                                </div>
 
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                            `;
+                            </div>
+                        </div>
+                    `;
 
             container.insertAdjacentHTML('beforeend', html);
             subSiteIndex++;
