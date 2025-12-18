@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreInstallationRequest;
 use App\Models\Installation;
 use App\Models\InstallationFile;
-use Illuminate\Support\Facades\DB;
 use App\Models\Place;
+use App\Models\SubSite;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class InstallationController extends Controller
@@ -161,6 +163,87 @@ class InstallationController extends Controller
         return redirect()
             ->route('installations.show', $installation)
             ->with('success', 'Notas actualizadas correctamente.');
+
+    }
+
+    public function update(Request $request, Installation $installation)
+    {
+        $this->authorize('update', $installation);
+
+        $data = $request->validate([
+            'installation_date' => ['required', 'date'],
+            'limiters_installed' => ['required', 'integer', 'min:1'],
+            'sub_sites' => ['required', 'array'],
+            'sub_sites.*' => ['exists:sub_sites,id'],
+        ]);
+
+        DB::transaction(function () use ($installation, $data) {
+
+            $installation->update([
+                'installation_date' => $data['installation_date'],
+                'limiters_installed' => $data['limiters_installed'],
+            ]);
+
+            $installation->subSites()->sync($data['sub_sites']);
+
+            $installation->logs()->create([
+                'user_id' => auth()->id(),
+                'action' => 'Edición de instalación',
+                'description' => 'Se modificaron los datos generales.',
+            ]);
+        });
+
+        return back()->with('success', 'Instalación actualizada correctamente.');
+    }
+    public function updateFiles(
+        Request $request,
+        Installation $installation,
+        SubSite $subSite
+    ) {
+        $this->authorize('update', $installation);
+
+        $data = $request->validate([
+            'type' => ['required', 'in:csv,pdf_programming,pdf_installation'],
+            'file' => ['required', 'file'],
+        ]);
+
+        DB::transaction(function () use ($request, $installation, $subSite, $data) {
+
+            $existing = $installation->files()
+                ->where('sub_site_id', $subSite->id)
+                ->where('type', $data['type'])
+                ->first();
+
+            if ($existing) {
+                Storage::disk('public')->delete($existing->file_path);
+                $existing->delete();
+            }
+
+            $path = $request->file('file')->store(
+                "installations/{$installation->id}/{$subSite->id}/{$data['type']}",
+                'public'
+            );
+
+            InstallationFile::create([
+                'installation_id' => $installation->id,
+                'sub_site_id' => $subSite->id,
+                'type' => $data['type'],
+                'original_name' => $request->file('file')->getClientOriginalName(),
+                'file_path' => $path,
+                'file_size' => $request->file('file')->getSize(),
+                'mime_type' => $request->file('file')->getMimeType(),
+            ]);
+
+            $installation->logs()->create([
+                'user_id' => auth()->id(),
+                'action' => 'Actualización de archivo',
+                'description' => "Archivo {$data['type']} actualizado en {$subSite->name}",
+            ]);
+        });
+
+        return back()
+            ->with('success', 'Archivo guardado correctamente.')
+            ->with('open_sub_site_modal', $subSite->id);
 
     }
 

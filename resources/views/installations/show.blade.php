@@ -1,306 +1,259 @@
-@extends('layouts.app')
+@extends('layouts.metronic.app')
+
+@section('title', 'Detalle de instalación')
+
+{{-- MODALES --}}
+@include('installations.modals.edit')
+@include('installations.modals.files')
 
 @section('content')
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3>Detalle de instalación</h3>
+{{-- HEADER --}}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h3 class="fw-bold mb-1">
+            Instalación · {{ $installation->place->name }}
+        </h3>
+        <div class="text-muted">
+            {{ $installation->installation_date->format('d/m/Y H:i') }}
+        </div>
 
-    <a href="{{ route('installations.index') }}" class="btn btn-secondary">
-        Volver
-    </a>
-</div>
-
-{{-- Info general --}}
-<div class="card mb-4">
-    <div class="card-header">
-        <strong>Información general</strong>
+        @can('update', $installation)
+            <button class="btn btn-light-primary mt-2"
+                    data-toggle="modal"
+                    data-target="#modalEditInstallation">
+                Editar instalación
+            </button>
+        @endcan
     </div>
 
+    <div class="d-flex align-items-center gap-3">
+        @switch($installation->installation_status)
+            @case('complete')
+                <span class="badge badge-light-success text-success fw-bold">
+                    Completa
+                </span>
+                @break
+
+            @case('partial')
+                <span class="badge badge-light-warning text-warning fw-bold">
+                    Incompleta ({{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }})
+                </span>
+                @break
+
+            @case('empty')
+                <span class="badge badge-light-danger text-danger fw-bold">
+                    Sin archivos
+                </span>
+                @break
+        @endswitch
+
+        <a href="{{ route('installations.index') }}" class="btn btn-light">
+            Volver
+        </a>
+    </div>
+</div>
+
+{{-- INFO GENERAL --}}
+<div class="card mb-5">
     <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <strong>Lugar</strong><br>
-                {{ $installation->place->name }}
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="text-muted mb-1">Lugar</div>
+                <div class="fw-bold">{{ $installation->place->name }}</div>
             </div>
-
-            <div class="col-md-4">
-                <strong>Fecha de instalación</strong><br>
-                {{ \Carbon\Carbon::parse($installation->installation_date)->format('d/m/Y') }}
+            <div class="col-md-3">
+                <div class="text-muted mb-1">Fecha</div>
+                <div class="fw-bold">{{ $installation->installation_date->format('d/m/Y H:i') }}</div>
             </div>
-
-            <div class="col-md-4">
-                <strong>Nº de limitadores instalados</strong><br>
-                {{ $installation->limiters_installed }}
+            <div class="col-md-3">
+                <div class="text-muted mb-1">Limitadores</div>
+                <div class="fw-bold">{{ $installation->limiters_installed }}</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted mb-1">Sub-sitios</div>
+                <div class="fw-bold">{{ $installation->subSites->count() }}</div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Sub-sitios --}}
-<div class="card mb-4">
-    <div class="card-header">
-        <strong>Sub-sitios incluidos</strong>
-    </div>
-
-    <div class="card-body">
-        @if($installation->subSites->isEmpty())
-            <p class="text-muted mb-0">No hay sub-sitios asociados a esta instalación.</p>
-        @else
-            <ul class="mb-0">
-                @foreach($installation->subSites as $subSite)
-                    <li>{{ $subSite->name }}</li>
-                @endforeach
-            </ul>
-        @endif
-    </div>
-</div>
-
-{{-- Archivos por sub-sitio --}}
-<div class="card">
+{{-- ARCHIVOS POR SUB-SITIO --}}
+<div class="card mb-5">
     <div class="card-header">
         <strong>Archivos técnicos por sub-sitio</strong>
     </div>
 
     <div class="card-body">
+
         @forelse($installation->subSites as $subSite)
 
             @php
-                $files = $installation->files->where('sub_site_id', $subSite->id);
+                $files = $installation->files
+                    ->where('sub_site_id', $subSite->id);
 
-                // Si quieres un orden consistente en tabla:
                 $order = ['csv' => 1, 'pdf_programming' => 2, 'pdf_installation' => 3];
                 $files = $files->sortBy(fn($f) => $order[$f->type] ?? 99);
             @endphp
 
-            <div class="mb-4">
-                <h6 class="mb-3">{{ $subSite->name }}</h6>
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ $subSite->name }}</h6>
 
-                @if($files->isEmpty())
-                    <p class="text-muted">No hay archivos asociados.</p>
-                @else
-                    <table class="table table-sm table-bordered align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 180px;">Tipo</th>
-                                <th>Archivo</th>
-                                <th style="width: 140px;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($files as $file)
-                                <tr>
-                                    <td>
-                                        @switch($file->type)
-                                            @case('csv')
-                                                CSV
-                                                @break
-                                            @case('pdf_programming')
-                                                PDF Programación
-                                                @break
-                                            @case('pdf_installation')
-                                                PDF Instalación
-                                                @break
-                                            @default
-                                                {{ $file->type }}
-                                        @endswitch
-                                    </td>
+                    @can('update', $installation)
+                        <button class="btn btn-sm btn-light-primary"
+                                data-toggle="modal"
+                                data-target="#modalFilesSubSite{{ $subSite->id }}">
+                            Gestionar archivos
+                        </button>
+                    @endcan
+                </div>
 
-                                    <td>
-                                        <div class="fw-semibold">{{ $file->original_name }}</div>
-                                        <div class="text-muted small">
-                                            {{ number_format(($file->file_size ?? 0) / 1024, 1) }} KB
-                                            @if(!empty($file->mime_type))
-                                                · {{ $file->mime_type }}
-                                            @endif
-                                        </div>
-                                    </td>
+                <div class="card-body py-3">
 
-                                    <td>
-                                        <a
-                                            href="{{ route('installation-files.download', $file) }}"
-                                            class="btn btn-sm btn-outline-primary"
-                                        >
-                                            Descargar
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
+                    @if($files->isEmpty())
+                        <span class="badge badge-light-warning text-warning fw-bold">
+                            Sin archivos
+                        </span>
+                    @else
+                        <table class="table table-sm align-middle mb-0">
+                            <tbody>
+                                @foreach($files as $file)
+                                    <tr>
+                                        <td style="width:180px">
+                                            <span class="badge badge-light-info text-info fw-bold">
+                                                {{ strtoupper(str_replace('_', ' ', $file->type)) }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="fw-semibold">{{ $file->original_name }}</div>
+                                            <div class="text-muted small">
+                                                {{ number_format(($file->file_size ?? 0) / 1024, 1) }} KB
+                                            </div>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <a href="{{ route('installation-files.download', $file) }}"
+                                               class="btn btn-sm btn-light-primary">
+                                                Descargar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+
+                </div>
             </div>
 
         @empty
-            <p class="text-muted mb-0">No hay sub-sitios asociados a esta instalación.</p>
+            <p class="text-muted mb-0">No hay sub-sitios asociados.</p>
         @endforelse
+
     </div>
 </div>
-{{-- Notas técnicas --}}
-<div class="card mt-4">
+
+{{-- NOTAS --}}
+<div class="card mb-5">
     <div class="card-header">
         <strong>Notas técnicas</strong>
     </div>
 
     <div class="card-body">
-
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
         @can('update', $installation)
-
             <form method="POST" action="{{ route('installations.notes.update', $installation) }}">
                 @csrf
                 @method('PATCH')
 
-                <div class="mb-3">
-                    <textarea
-                        name="notes"
-                        class="form-control"
-                        rows="5"
-                        placeholder="Observaciones técnicas, incidencias, ajustes realizados…"
-                    >{{ old('notes', $installation->notes) }}</textarea>
-                </div>
+                <textarea name="notes"
+                          class="form-control mb-3"
+                          rows="4">{{ old('notes', $installation->notes) }}</textarea>
 
-                <button class="btn btn-primary">
-                    Guardar notas
-                </button>
+                <button class="btn btn-primary">Guardar notas</button>
             </form>
-
         @else
-
-            @if($installation->notes)
-                <p class="mb-0">{{ $installation->notes }}</p>
-            @else
-                <p class="text-muted mb-0">No hay notas técnicas registradas.</p>
-            @endif
-
+            <p>{{ $installation->notes ?? 'No hay notas técnicas.' }}</p>
         @endcan
-
     </div>
 </div>
-{{-- Histórico de intervenciones --}}
-<div class="card mt-4">
+
+{{-- HISTÓRICO --}}
+<div class="card mb-5">
     <div class="card-header">
         <strong>Histórico de intervenciones</strong>
     </div>
 
     <div class="card-body">
-
         @if($installation->logs->isEmpty())
             <p class="text-muted mb-0">No hay intervenciones registradas.</p>
         @else
-            <ul class="list-group list-group-flush">
+            <ul class="timeline">
                 @foreach($installation->logs as $log)
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>{{ $log->action }}</strong>
-                            <span class="text-muted small">
-                                {{ $log->created_at->format('d/m/Y H:i') }}
-                            </span>
+                    <li class="timeline-item">
+                        <span class="timeline-point timeline-point-primary"></span>
+                        <div class="timeline-content">
+                            <div class="fw-bold">{{ $log->action }}</div>
+                            <div class="text-muted small">
+                                {{ $log->user->name }} · {{ $log->created_at->format('d/m/Y H:i') }}
+                            </div>
+                            @if($log->description)
+                                <div class="mt-1">{{ $log->description }}</div>
+                            @endif
                         </div>
-
-                        <div class="text-muted small mb-1">
-                            {{ $log->user->name }}
-                        </div>
-
-                        @if($log->description)
-                            <div>{{ $log->description }}</div>
-                        @endif
                     </li>
                 @endforeach
             </ul>
         @endif
-
     </div>
 </div>
 
-{{-- Incidencias técnicas --}}
-<div class="card mt-4">
+{{-- INCIDENCIAS --}}
+<div class="card mb-5">
     <div class="card-header">
         <strong>Incidencias técnicas</strong>
     </div>
 
     <div class="card-body">
-
         @can('update', $installation)
-            <form method="POST" action="{{ route('installations.issues.store', $installation) }}" class="mb-4">
+            <form method="POST"
+                  action="{{ route('installations.issues.store', $installation) }}"
+                  class="mb-4">
                 @csrf
-
-                <div class="mb-2">
-                    <input
-                        type="text"
-                        name="title"
-                        class="form-control"
-                        placeholder="Título de la incidencia"
-                        required
-                    >
-                </div>
-
-                <div class="mb-2">
-                    <textarea
-                        name="description"
-                        class="form-control"
-                        rows="3"
-                        placeholder="Descripción técnica"
-                        required
-                    ></textarea>
-                </div>
-
-                <button class="btn btn-warning">
-                    Registrar incidencia
-                </button>
+                <input type="text" name="title" class="form-control mb-2" placeholder="Título" required>
+                <textarea name="description" class="form-control mb-2" rows="3" placeholder="Descripción" required></textarea>
+                <button class="btn btn-warning">Registrar incidencia</button>
             </form>
         @endcan
 
         @if($installation->issues->isEmpty())
-            <p class="text-muted mb-0">No hay incidencias registradas.</p>
+            <p class="text-muted mb-0">No hay incidencias.</p>
         @else
             <ul class="list-group list-group-flush">
                 @foreach($installation->issues as $issue)
                     <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong>{{ $issue->title }}</strong>
-                                <div class="text-muted small">
-                                    {{ $issue->user->name }} ·
-                                    {{ $issue->created_at->format('d/m/Y H:i') }}
-                                </div>
-                            </div>
-
-                            <span class="badge {{ $issue->status === 'open' ? 'bg-danger' : 'bg-success' }}">
-                                {{ $issue->status === 'open' ? 'Abierta' : 'Cerrada' }}
-                            </span>
+                        <strong>{{ $issue->title }}</strong>
+                        <div class="text-muted small">
+                            {{ $issue->user->name }} · {{ $issue->created_at->format('d/m/Y H:i') }}
                         </div>
-
-                        <div class="mt-2">
-                            {{ $issue->description }}
-                        </div>
-
-                        @can('update', $installation)
-                            @if($issue->status === 'open')
-                                <form
-                                    method="POST"
-                                    action="{{ route('installation-issues.close', $issue) }}"
-                                    class="mt-2"
-                                >
-                                    @csrf
-                                    @method('PATCH')
-
-                                    <button class="btn btn-sm btn-outline-success">
-                                        Cerrar incidencia
-                                    </button>
-                                </form>
-                            @endif
-                        @endcan
+                        <div class="mt-2">{{ $issue->description }}</div>
                     </li>
                 @endforeach
             </ul>
         @endif
-
     </div>
 </div>
 
 @endsection
+@push('scripts')
+    @if(session('open_sub_site_modal'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const modalId = '#modalFilesSubSite{{ session('open_sub_site_modal') }}';
+                $(modalId).modal('show');
+            });
+        </script>
+    @endif
+@endpush
+

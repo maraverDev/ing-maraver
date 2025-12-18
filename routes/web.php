@@ -31,6 +31,18 @@ Route::middleware(['auth'])->group(function () {
         // Installations
         Route::get('/installations/{installation}', [InstallationController::class, 'show'])
             ->name('installations.show');
+        Route::put('/installations/{installation}', [InstallationController::class, 'update'])
+            ->name('installations.update');
+        Route::post(
+            '/installations/{installation}/files/{subSite}',
+            [InstallationController::class, 'updateFiles']
+        )->name('installations.files.update');
+
+        // ELIMINAR archivo (DELETE REAL)
+        Route::delete(
+            '/installation-files/{file}',
+            [InstallationFileController::class, 'destroy']
+        )->name('installation-files.destroy');
 
         // Downloads
         Route::get('/acoustic-studies/{study}/download', [AcousticStudyController::class, 'download'])
