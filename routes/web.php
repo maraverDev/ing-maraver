@@ -33,10 +33,12 @@ Route::middleware(['auth'])->group(function () {
             ->name('installations.show');
         Route::put('/installations/{installation}', [InstallationController::class, 'update'])
             ->name('installations.update');
+
+        // Installation Files
         Route::post(
             '/installations/{installation}/files/{subSite}',
-            [InstallationController::class, 'updateFiles']
-        )->name('installations.files.update');
+            [InstallationFileController::class, 'store']
+        )->name('installations.files.store');
 
         // ELIMINAR archivo (DELETE REAL)
         Route::delete(

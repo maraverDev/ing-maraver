@@ -43,13 +43,24 @@ class InstallationController extends Controller
             $query->whereDate('installation_date', '<=', $request->to);
         }
 
-        $installations = Installation::with([
-            'place',
-            'creationLog.user',
-            'subSites',
-            'files',
-        ])
-            ->orderByDesc('installation_date')
+        // Ordenación
+        $sort = $request->get('sort', 'installation_date');
+        $direction = $request->get('direction', 'desc');
+        $allowedSorts = ['installation_date', 'place', 'limiters_installed'];
+
+        if (in_array($sort, $allowedSorts)) {
+            if ($sort === 'place') {
+                $query->join('places', 'installations.place_id', '=', 'places.id')
+                    ->select('installations.*')
+                    ->orderBy('places.name', $direction);
+            } else {
+                $query->orderBy($sort, $direction);
+            }
+        } else {
+            $query->orderByDesc('installation_date');
+        }
+
+        $installations = $query->with(['files']) // files ya estaba en el with inicial pero aquí se asegura
             ->paginate(15)
             ->withQueryString();
 
@@ -172,7 +183,7 @@ class InstallationController extends Controller
 
         $data = $request->validate([
             'installation_date' => ['required', 'date'],
-            'limiters_installed' => ['required', 'integer', 'min:1'],
+            'limiters_installed' => ['required', 'integer', 'min:1', 'max:' . ($installation->place->max_limiters ?? 999)],
             'sub_sites' => ['required', 'array'],
             'sub_sites.*' => ['exists:sub_sites,id'],
         ]);
@@ -195,57 +206,5 @@ class InstallationController extends Controller
 
         return back()->with('success', 'Instalación actualizada correctamente.');
     }
-    public function updateFiles(
-        Request $request,
-        Installation $installation,
-        SubSite $subSite
-    ) {
-        $this->authorize('update', $installation);
-
-        $data = $request->validate([
-            'type' => ['required', 'in:csv,pdf_programming,pdf_installation'],
-            'file' => ['required', 'file'],
-        ]);
-
-        DB::transaction(function () use ($request, $installation, $subSite, $data) {
-
-            $existing = $installation->files()
-                ->where('sub_site_id', $subSite->id)
-                ->where('type', $data['type'])
-                ->first();
-
-            if ($existing) {
-                Storage::disk('public')->delete($existing->file_path);
-                $existing->delete();
-            }
-
-            $path = $request->file('file')->store(
-                "installations/{$installation->id}/{$subSite->id}/{$data['type']}",
-                'public'
-            );
-
-            InstallationFile::create([
-                'installation_id' => $installation->id,
-                'sub_site_id' => $subSite->id,
-                'type' => $data['type'],
-                'original_name' => $request->file('file')->getClientOriginalName(),
-                'file_path' => $path,
-                'file_size' => $request->file('file')->getSize(),
-                'mime_type' => $request->file('file')->getMimeType(),
-            ]);
-
-            $installation->logs()->create([
-                'user_id' => auth()->id(),
-                'action' => 'Actualización de archivo',
-                'description' => "Archivo {$data['type']} actualizado en {$subSite->name}",
-            ]);
-        });
-
-        return back()
-            ->with('success', 'Archivo guardado correctamente.')
-            ->with('open_sub_site_modal', $subSite->id);
-
-    }
-
 
 }

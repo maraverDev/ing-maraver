@@ -28,59 +28,8 @@ class StoreInstallationRequest extends FormRequest
 
     public function withValidator(Validator $validator)
     {
-        $validator->after(function ($validator) {
-
-            $subSites = $this->input('sub_sites', []);
-
-            foreach ($subSites as $subSiteId) {
-
-                $uploaded = $this->file("files.$subSiteId", []);
-
-                $found = [
-                    'csv' => false,
-                    'pdf_programming' => false,
-                    'pdf_installation' => false,
-                ];
-
-                foreach ($uploaded as $file) {
-                    $name = strtoupper($file->getClientOriginalName());
-                    $ext = strtolower($file->getClientOriginalExtension());
-
-                    if ($ext === 'csv') {
-                        $found['csv'] = true;
-                    }
-
-                    if ($ext === 'pdf') {
-
-                        if (
-                            str_contains($name, 'SET') ||
-                            str_contains($name, 'PROG') ||
-                            str_contains($name, 'PROGRAM')
-                        ) {
-                            $found['pdf_programming'] = true;
-                        }
-
-                        if (
-                            str_contains($name, 'INS') ||
-                            str_contains($name, 'INSTAL')
-                        ) {
-                            $found['pdf_installation'] = true;
-                        }
-                    }
-
-                }
-
-                foreach ($found as $type => $ok) {
-                    if (!$ok) {
-                        $validator->errors()->add(
-                            "files.$subSiteId",
-                            "En el sub-sitio seleccionado debes subir exactamente:
-     1 CSV, 1 PDF de programación (SET) y 1 PDF de instalación (INS)."
-                        );
-                    }
-                }
-            }
-        });
+        // Eliminamos la validación estricta de archivos para permitir guardar instalaciones incompletas
+        // El estado 'Completa'/'Incompleta' se calculará dinámicamente según lo que se suba.
     }
 
 }

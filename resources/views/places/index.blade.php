@@ -80,10 +80,10 @@
         <script>
             Swal.fire({
                 icon: 'success',
-                title: 'Correcto',
+                title: '¡Éxito!',
                 text: '{{ session('success') }}',
-                timer: 2000,
-                showConfirmButton: false
+                confirmButtonText: 'Aceptar',
+                timer: 3000
             });
         </script>
     @endif

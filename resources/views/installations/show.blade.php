@@ -247,11 +247,27 @@
 
 @endsection
 @push('scripts')
+    {{-- Reabrir modal si se guardó/eliminó un archivo --}}
     @if(session('open_sub_site_modal'))
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const modalId = '#modalFilesSubSite{{ session('open_sub_site_modal') }}';
                 $(modalId).modal('show');
+            });
+        </script>
+    @endif
+
+    {{-- SweetAlert para mensajes de éxito --}}
+    @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ session('success') }}',
+                    confirmButtonText: 'Aceptar',
+                    timer: 3000
+                });
             });
         </script>
     @endif

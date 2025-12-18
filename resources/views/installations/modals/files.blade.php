@@ -39,8 +39,7 @@
                                 </div>
 
                                 {{-- FORM ELIMINAR CSV --}}
-                                <form method="POST" action="{{ route('installation-files.destroy', $currentCsv) }}"
-                                    onsubmit="return confirm('¿Eliminar este archivo?');">
+                                <form method="POST" action="{{ route('installation-files.destroy', $currentCsv) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-light-danger">
@@ -55,7 +54,7 @@
                         @endif
 
                         {{-- FORM GUARDAR CSV --}}
-                        <form method="POST" action="{{ route('installations.files.update', [$installation, $subSite]) }}"
+                        <form method="POST" action="{{ route('installations.files.store', [$installation, $subSite]) }}"
                             enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="type" value="csv">
@@ -84,8 +83,7 @@
                                 </div>
 
                                 {{-- FORM ELIMINAR PROG --}}
-                                <form method="POST" action="{{ route('installation-files.destroy', $currentProg) }}"
-                                    onsubmit="return confirm('¿Eliminar este archivo?');">
+                                <form method="POST" action="{{ route('installation-files.destroy', $currentProg) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-light-danger">
@@ -100,7 +98,7 @@
                         @endif
 
                         {{-- FORM GUARDAR PROG --}}
-                        <form method="POST" action="{{ route('installations.files.update', [$installation, $subSite]) }}"
+                        <form method="POST" action="{{ route('installations.files.store', [$installation, $subSite]) }}"
                             enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="type" value="pdf_programming">
@@ -129,8 +127,7 @@
                                 </div>
 
                                 {{-- FORM ELIMINAR INST --}}
-                                <form method="POST" action="{{ route('installation-files.destroy', $currentInst) }}"
-                                    onsubmit="return confirm('¿Eliminar este archivo?');">
+                                <form method="POST" action="{{ route('installation-files.destroy', $currentInst) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-light-danger">
@@ -145,7 +142,7 @@
                         @endif
 
                         {{-- FORM GUARDAR INST --}}
-                        <form method="POST" action="{{ route('installations.files.update', [$installation, $subSite]) }}"
+                        <form method="POST" action="{{ route('installations.files.store', [$installation, $subSite]) }}"
                             enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="type" value="pdf_installation">
@@ -170,3 +167,41 @@
         </div>
     </div>
 @endforeach
+
+<script>
+// Interceptar todos los formularios de eliminación
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleccionar todos los formularios que tienen método DELETE
+    const deleteForms = document.querySelectorAll('form[method="POST"]');
+    
+    deleteForms.forEach(form => {
+        // Verificar si el formulario tiene el input _method con valor DELETE
+        const methodInput = form.querySelector('input[name="_method"][value="DELETE"]');
+        
+        if (methodInput) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Obtener el nombre del archivo del elemento anterior
+                const fileNameElement = form.closest('.d-flex').querySelector('.fw-semibold');
+                const fileName = fileNameElement ? fileNameElement.textContent : 'este archivo';
+                
+                Swal.fire({
+                    title: '¿Eliminar archivo?',
+                    text: `Se eliminará "${fileName}"`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        }
+    });
+});
+</script>

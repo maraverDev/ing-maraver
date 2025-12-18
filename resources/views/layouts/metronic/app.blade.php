@@ -5,6 +5,45 @@
     @include('layouts.metronic.head')
 
     <style>
+        /* Loader de página completo */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3699ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        body.loaded #page-loader {
+            opacity: 0;
+            visibility: hidden;
+        }
+
         .custom-file-upload {
             display: flex;
             align-items: center;
@@ -60,14 +99,59 @@
             transform: scale(1.1);
         }
 
+        /* Estilos de Validación */
+        .is-invalid {
+            border-color: #f64e60 !important;
+            padding-right: calc(1.5em + 1.3rem) !important;
+            background-repeat: no-repeat !important;
+            background-position: right calc(0.375em + 0.325rem) center !important;
+            background-size: calc(0.75em + 0.65rem) calc(0.75em + 0.65rem) !important;
+        }
+
+        .invalid-feedback {
+            color: #f64e60 !important;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .border-danger {
+            border-color: #f64e60 !important;
+        }
+
+        .text-danger {
+            color: #f64e60 !important;
+        }
+
+        .sub-site-card.border-danger {
+            background-color: #fff5f8;
+        }
+
         .sub-site-card input[type="checkbox"]:checked+.sub-site-content {
             color: #3699ff;
         }
     </style>
+
+    <script>
+        // Función para ocultar el loader
+        function hideLoader() {
+            document.body.classList.add('loaded');
+        }
+
+        // Ocultar cuando todo esté listo
+        window.addEventListener('load', hideLoader);
+
+        // Fail-safe: si tarda mucho (3s), mostrar la página igualmente
+        setTimeout(hideLoader, 3000);
+    </script>
 </head>
 
 <body
     class="m-page--fluid m--skin- m-content--skin-light2 m-header--fixed m-header--fixed-mobile m-aside-left--enabled m-aside-left--skin-dark m-aside-left--offcanvas m-footer--push m-aside--offcanvas-default">
+
+    {{-- Loader HTML --}}
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
 
     <div class="m-grid m-grid--hor m-grid--root m-page">
 
