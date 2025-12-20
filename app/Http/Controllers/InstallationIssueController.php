@@ -30,7 +30,7 @@ class InstallationIssueController extends Controller
             'description' => $issue->title,
         ]);
 
-        return redirect()->back();
+        return redirect()->back()->with('success_issue', true);
     }
 
     public function close(InstallationIssue $issue)

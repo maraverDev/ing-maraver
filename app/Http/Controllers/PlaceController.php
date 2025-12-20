@@ -14,9 +14,25 @@ class PlaceController extends Controller
 {
     public function index()
     {
-        $places = Place::withCount('subSites')
-            ->orderBy('name')
-            ->get();
+        $sort = request('sort', 'name');
+        $direction = request('direction', 'asc');
+
+        $query = Place::withCount('subSites');
+
+        // Lógica de ordenación
+        switch ($sort) {
+            case 'sub_sites_count':
+                $query->orderBy('sub_sites_count', $direction);
+                break;
+            case 'max_limiters':
+                $query->orderBy('max_limiters', $direction);
+                break;
+            default:
+                $query->orderBy('name', $direction);
+                break;
+        }
+
+        $places = $query->paginate(10)->withQueryString();
 
         return view('places.index', compact('places'));
     }
@@ -39,7 +55,15 @@ class PlaceController extends Controller
                 ]);
 
                 if ($request->hasFile("sub_sites.$index.files")) {
+                    $fileNames = [];
                     foreach ($request->file("sub_sites.$index.files") as $file) {
+                        $originalName = $file->getClientOriginalName();
+
+                        // Check for duplicates within the current request for this subsite
+                        if (in_array($originalName, $fileNames)) {
+                            throw new \Exception("No se pueden subir múltiples archivos con el mismo nombre ('{$originalName}') para el mismo sub-sitio.");
+                        }
+                        $fileNames[] = $originalName;
 
                         $path = $file->store(
                             "acoustic-studies/{$place->id}/{$subSite->id}"
@@ -47,10 +71,11 @@ class PlaceController extends Controller
 
                         AcousticStudy::create([
                             'sub_site_id' => $subSite->id,
-                            'original_name' => $file->getClientOriginalName(),
+                            'original_name' => $originalName,
                             'file_path' => $path,
                             'file_size' => $file->getSize(),
                             'mime_type' => $file->getMimeType(),
+                            'uploaded_at' => now(),
                         ]);
                     }
                 }

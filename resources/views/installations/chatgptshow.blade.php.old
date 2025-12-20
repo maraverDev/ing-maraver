@@ -9,7 +9,7 @@
 @section('content')
 
     {{-- HEADER / TOOLBAR --}}
-    <div class="m-portlet m-portlet--last m-portlet--head-lg m-portlet--responsive-mobile mb-5" id="main_portlet">
+    <div class="m-portlet m-portlet--last m-portlet--head-lg m-portlet--responsive-mobile" id="main_portlet">
         <div class="m-portlet__head">
             <div class="m-portlet__head-progress">
                 <!-- empty -->
@@ -27,49 +27,45 @@
                     </div>
                 </div>
                 <div class="m-portlet__head-tools">
-                    <ul class="m-portlet__nav">
-                        <li class="m-portlet__nav-item">
-                            @switch($installation->installation_status)
-                                @case('complete')
-                                    <span class="m-badge m-badge--success m-badge--wide m-badge--rounded font-weight-bold">
-                                        Completa
-                                    </span>
-                                @break
-
-                                @case('partial')
-                                    <span class="m-badge m-badge--warning m-badge--wide m-badge--rounded font-weight-bold">
-                                        Incompleta ({{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }})
-                                    </span>
-                                @break
-
-                                @case('empty')
-                                    <span class="m-badge m-badge--danger m-badge--wide m-badge--rounded font-weight-bold">
-                                        Sin archivos
-                                    </span>
-                                @break
-                            @endswitch
-                        </li>
-                        <li class="m-portlet__nav-item">
-                            <a href="{{ route('installations.index') }}"
-                                class="btn btn-secondary m-btn m-btn--icon m-btn--wide m-btn--md m-btn--air">
-                                <span>
-                                    <i class="la la-arrow-left"></i>
-                                    <span>Volver</span>
+                    <div class="d-flex align-items-center gap-3">
+                        @switch($installation->installation_status)
+                            @case('complete')
+                                <span class="m-badge m-badge--success m-badge--wide m-badge--rounded fw-bold">
+                                    Completa
                                 </span>
-                            </a>
-                        </li>
+                            @break
+
+                            @case('partial')
+                                <span class="m-badge m-badge--warning m-badge--wide m-badge--rounded fw-bold">
+                                    Incompleta ({{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }})
+                                </span>
+                            @break
+
+                            @case('empty')
+                                <span class="m-badge m-badge--danger m-badge--wide m-badge--rounded fw-bold">
+                                    Sin archivos
+                                </span>
+                            @break
+                        @endswitch
+
+                        <a href="{{ route('installations.index') }}"
+                            class="btn btn-secondary m-btn m-btn--icon m-btn--wide m-btn--md m-btn--air">
+                            <span>
+                                <i class="la la-arrow-left"></i>
+                                <span>Volver</span>
+                            </span>
+                        </a>
+
                         @can('update', $installation)
-                            <li class="m-portlet__nav-item">
-                                <button class="btn btn-primary m-btn m-btn--icon m-btn--wide m-btn--md m-btn--air" data-toggle="modal"
-                                    data-target="#modalEditInstallation">
-                                    <span>
-                                        <i class="la la-edit"></i>
-                                        <span>Editar</span>
-                                    </span>
-                                </button>
-                            </li>
+                            <button class="btn btn-primary m-btn m-btn--icon m-btn--wide m-btn--md m-btn--air" data-toggle="modal"
+                                data-target="#modalEditInstallation">
+                                <span>
+                                    <i class="la la-edit"></i>
+                                    <span>Editar</span>
+                                </span>
+                            </button>
                         @endcan
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,10 +118,10 @@
         </div>
     </div>
 
-    <div class="row m--margin-top-20">
+    <div class="row">
         <div class="col-xl-8">
             {{-- ARCHIVOS POR SUB-SITIO --}}
-            <div class="m-portlet m-portlet--mobile mb-5">
+            <div class="m-portlet m-portlet--mobile">
                 <div class="m-portlet__head">
                     <div class="m-portlet__head-caption">
                         <div class="m-portlet__head-title">
@@ -144,10 +140,10 @@
                         @endphp
 
                         <div class="m-portlet m-portlet--bordered m-portlet--unair mb-4">
-                            <div class="m-portlet__head">
+                            <div class="m-portlet__head" style="height: 50px;">
                                 <div class="m-portlet__head-caption">
                                     <div class="m-portlet__head-title">
-                                        <h3 class="m-portlet__head-text font-weight-bold">
+                                        <h3 class="m-portlet__head-text fs-6 fw-bold">
                                             {{ $subSite->name }}
                                         </h3>
                                     </div>
@@ -177,7 +173,7 @@
                                                     <th>Tipo</th>
                                                     <th>Nombre del archivo</th>
                                                     <th class="text-center">Tamaño</th>
-                                                    <th class="text-right">Acciones</th>
+                                                    <th class="text-end">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -188,12 +184,12 @@
                                                                 class="m-badge m-badge--info m-badge--wide">{{ strtoupper(str_replace('_', ' ', $file->type)) }}</span>
                                                         </td>
                                                         <td style="vertical-align: middle;">
-                                                            <span class="font-weight-bold text-dark">{{ $file->original_name }}</span>
+                                                            <span class="fw-semibold text-dark">{{ $file->original_name }}</span>
                                                         </td>
                                                         <td class="text-center" style="vertical-align: middle;">
                                                             {{ number_format(($file->file_size ?? 0) / 1024, 1) }} KB
                                                         </td>
-                                                        <td class="text-right" style="vertical-align: middle;">
+                                                        <td class="text-end" style="vertical-align: middle;">
                                                             <a href="{{ route('installation-files.download', $file) }}"
                                                                 class="btn btn-secondary m-btn m-btn--icon m-btn--icon-only m-btn--pill"
                                                                 title="Descargar">
@@ -217,7 +213,7 @@
             </div>
 
             {{-- NOTAS TÉCNICAS --}}
-            <div class="m-portlet mb-5">
+            <div class="m-portlet">
                 <div class="m-portlet__head">
                     <div class="m-portlet__head-caption">
                         <div class="m-portlet__head-title">
@@ -256,7 +252,7 @@
 
         <div class="col-xl-4">
             {{-- INCIDENCIAS TÉCNICAS --}}
-            <div class="m-portlet mb-5 m-portlet--head-sm">
+            <div class="m-portlet">
                 <div class="m-portlet__head">
                     <div class="m-portlet__head-caption">
                         <div class="m-portlet__head-title">
@@ -265,18 +261,8 @@
                             </h3>
                         </div>
                     </div>
-                    <div class="m-portlet__head-tools">
-                        <ul class="m-portlet__nav">
-                            <li class="m-portlet__nav-item">
-                                <a href="#collapse_incidencias" data-toggle="collapse" class="m-portlet__nav-link m-portlet__nav-link--icon">
-                                    <i class="la la-angle-down"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
-                <div class="collapse {{ session('success_issue') || $errors->any() ? 'show' : '' }}" id="collapse_incidencias">
-                    <div class="m-portlet__body">
+                <div class="m-portlet__body">
                     @can('update', $installation)
                         <form method="POST" action="{{ route('installations.issues.store', $installation) }}"
                             class="m-form m-form--fit mb-4">
@@ -308,12 +294,11 @@
                             </div>
                         </div>
                     @endif
-                    </div>
                 </div>
             </div>
 
             {{-- HISTÓRICO --}}
-            <div class="m-portlet m-portlet--head-sm">
+            <div class="m-portlet">
                 <div class="m-portlet__head">
                     <div class="m-portlet__head-caption">
                         <div class="m-portlet__head-title">
@@ -322,24 +307,14 @@
                             </h3>
                         </div>
                     </div>
-                    <div class="m-portlet__head-tools">
-                        <ul class="m-portlet__nav">
-                            <li class="m-portlet__nav-item">
-                                <a href="#collapse_historico" data-toggle="collapse" class="m-portlet__nav-link m-portlet__nav-link--icon">
-                                    <i class="la la-angle-down"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
-                <div class="collapse" id="collapse_historico">
-                    <div class="m-portlet__body">
+                <div class="m-portlet__body">
                     @if ($installation->logs->isEmpty())
                         <p class="text-muted text-center py-4">No hay intervenciones registradas.</p>
                     @else
-                        <div style="max-height: 400px; overflow-y: auto;">
+                        <div class="m-scrollable" data-scrollable="true" data-height="400">
                             <div class="m-timeline-2">
-                                <div class="m-timeline-2__items m--padding-bottom-30">
+                                <div class="m-timeline-2__items  m--padding-top-25 m--padding-bottom-30">
                                     @foreach ($installation->logs as $log)
                                         <div class="m-timeline-2__item">
                                             <span
@@ -361,7 +336,6 @@
                             </div>
                         </div>
                     @endif
-                    </div>
                 </div>
             </div>
         </div>
@@ -393,25 +367,5 @@
             });
         </script>
     @endif
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Inicializar estado de las flechas para los que empiecen colapsados (si los hay)
-            $('.collapse').each(function() {
-                if (!$(this).hasClass('show')) {
-                    $('a[href="#' + this.id + '"] i').css('transform', 'rotate(0deg)');
-                } else {
-                    $('a[href="#' + this.id + '"] i').css('transform', 'rotate(180deg)');
-                }
-            });
-
-            // Rotar flecha al colapsar/expandir
-            $('.collapse').on('show.bs.collapse', function () {
-                $('a[href="#' + this.id + '"] i').css('transform', 'rotate(180deg)');
-            }).on('hide.bs.collapse', function () {
-                $('a[href="#' + this.id + '"] i').css('transform', 'rotate(0deg)');
-            });
-        });
-    </script>
 @endpush
 

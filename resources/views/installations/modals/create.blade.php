@@ -7,7 +7,8 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-installation-wide" role="document">
         <div class="modal-content">
 
-            <form action="{{ route('installations.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="formCreateInstallation" action="{{ route('installations.store') }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
 
                 {{-- HEADER --}}

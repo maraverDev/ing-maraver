@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreInstallationRequest;
 use App\Models\Installation;
 use App\Models\InstallationFile;
-use Illuminate\Support\Facades\DB;
 use App\Models\Place;
+use App\Models\SubSite;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class InstallationController extends Controller
@@ -41,16 +43,26 @@ class InstallationController extends Controller
             $query->whereDate('installation_date', '<=', $request->to);
         }
 
-        $installations = Installation::with([
-            'place',
-            'creationLog.user',
-            'subSites',
-            'files', // 👈 CLAVE
-        ])
-            ->orderByDesc('installation_date')
+        // Ordenación
+        $sort = $request->get('sort', 'installation_date');
+        $direction = $request->get('direction', 'desc');
+        $allowedSorts = ['installation_date', 'place', 'limiters_installed'];
+
+        if (in_array($sort, $allowedSorts)) {
+            if ($sort === 'place') {
+                $query->join('places', 'installations.place_id', '=', 'places.id')
+                    ->select('installations.*')
+                    ->orderBy('places.name', $direction);
+            } else {
+                $query->orderBy($sort, $direction);
+            }
+        } else {
+            $query->orderByDesc('installation_date');
+        }
+
+        $installations = $query->with(['files']) // files ya estaba en el with inicial pero aquí se asegura
             ->paginate(15)
             ->withQueryString();
-
 
         $places = Place::orderBy('name')->get();
 
@@ -165,5 +177,34 @@ class InstallationController extends Controller
 
     }
 
+    public function update(Request $request, Installation $installation)
+    {
+        $this->authorize('update', $installation);
+
+        $data = $request->validate([
+            'installation_date' => ['required', 'date'],
+            'limiters_installed' => ['required', 'integer', 'min:1', 'max:' . ($installation->place->max_limiters ?? 999)],
+            'sub_sites' => ['required', 'array'],
+            'sub_sites.*' => ['exists:sub_sites,id'],
+        ]);
+
+        DB::transaction(function () use ($installation, $data) {
+
+            $installation->update([
+                'installation_date' => $data['installation_date'],
+                'limiters_installed' => $data['limiters_installed'],
+            ]);
+
+            $installation->subSites()->sync($data['sub_sites']);
+
+            $installation->logs()->create([
+                'user_id' => auth()->id(),
+                'action' => 'Edición de instalación',
+                'description' => 'Se modificaron los datos generales.',
+            ]);
+        });
+
+        return back()->with('success', 'Instalación actualizada correctamente.');
+    }
 
 }
