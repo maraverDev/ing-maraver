@@ -89,6 +89,7 @@
                             </a>
                         </th>
                         <th>Estado</th>
+                        <th>Archivos</th>
                         <th>Técnico</th>
                     </tr>
                 </thead>
@@ -100,29 +101,50 @@
                             <td>{{ $installation->place->name }}</td>
                             <td>{{ $installation->subSites->count() }}</td>
                             <td>{{ $installation->limiters_installed }}</td>
-                            {{-- ESTADO --}}
-                            <td class="text-dark">
-                                @switch($installation->installation_status)
-                                    @case('complete')
-                                        <span class="badge badge-light-success text-success fw-bold">
-                                            Completa ({{ $installation->uploaded_files_count }})
-                                        </span>
-                                    @break
-
-                                    @case('partial')
-                                        <span class="badge badge-light-warning text-warning fw-bold">
-                                            Incompleta
-                                            ({{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }})
-                                        </span>
-                                    @break
-
-                                    @case('empty')
-                                        <span class="badge badge-light-danger text-danger fw-bold">
-                                            Sin archivos
-                                        </span>
-                                    @break
-                                @endswitch
+                            <td>
+                                @if ($installation->status === \App\Models\Installation::STATUS_COMPLETED)
+                                    <span class="badge badge-light-success text-success fw-bold">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Realizada
+                                    </span>
+                                @else
+                                    <span class="badge badge-light-warning text-warning fw-bold">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Pendiente
+                                    </span>
+                                @endif
                             </td>
+
+
+                            {{-- ARCHIVOS --}}
+<td>
+    @switch($installation->installation_status)
+
+        @case('complete')
+            <span class="badge badge-light-success text-success fw-bold">
+                <i class="fas fa-folder-open mr-1"></i>
+                {{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }}
+            </span>
+        @break
+
+        @case('partial')
+            <span class="badge badge-light-warning text-warning fw-bold">
+                <i class="fas fa-folder-minus mr-1"></i>
+                {{ $installation->uploaded_files_count }}/{{ $installation->expected_files_count }}
+            </span>
+        @break
+
+        @case('empty')
+            <span class="badge badge-light-danger text-danger fw-bold">
+                <i class="fas fa-folder mr-1"></i>
+                0/{{ $installation->expected_files_count }}
+            </span>
+        @break
+
+    @endswitch
+</td>
+
+
 
 
 

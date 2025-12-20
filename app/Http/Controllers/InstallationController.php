@@ -78,6 +78,8 @@ class InstallationController extends Controller
                 'place_id' => $request->place_id,
                 'installation_date' => $request->installation_date,
                 'limiters_installed' => $request->limiters_installed,
+                'status' => $request->status,
+
             ]);
 
             $installation->subSites()->sync($request->sub_sites);
@@ -124,11 +126,10 @@ class InstallationController extends Controller
                     'description' => 'Se creó la instalación sin subir archivos asociados.',
                 ]);
             }
-
             $installation->logs()->create([
                 'user_id' => auth()->id(),
                 'action' => 'Creación de instalación',
-                'description' => 'Registro inicial de la instalación.',
+                'description' => 'Estado inicial: ' . $installation->status,
             ]);
         });
 

@@ -9,11 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Installation extends Model
 {
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_PENDING = 'pending';
     protected $fillable = [
         'place_id',
         'installation_date',
         'limiters_installed',
         'notes',
+        'status',
     ];
 
     protected $casts = [
