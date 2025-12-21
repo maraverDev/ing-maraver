@@ -84,42 +84,46 @@ class InstallationController extends Controller
 
             $installation->subSites()->sync($request->sub_sites);
 
+            $hasFiles = false;
             foreach ($request->sub_sites as $subSiteId) {
 
                 $uploadedFiles = $request->file("files.$subSiteId");
 
-                foreach ($uploadedFiles as $file) {
+                if ($uploadedFiles) {
+                    foreach ($uploadedFiles as $file) {
+                        $hasFiles = true;
 
-                    $name = strtoupper($file->getClientOriginalName());
-                    $ext = strtolower($file->getClientOriginalExtension());
+                        $name = strtoupper($file->getClientOriginalName());
+                        $ext = strtolower($file->getClientOriginalExtension());
 
-                    if ($ext === 'csv') {
-                        $type = 'csv';
-                    } elseif ($ext === 'pdf' && str_contains($name, 'SET')) {
-                        $type = 'pdf_programming';
-                    } elseif ($ext === 'pdf' && str_contains($name, 'INS')) {
-                        $type = 'pdf_installation';
-                    } else {
-                        continue; // archivo no reconocido (ya validado antes)
+                        if ($ext === 'csv') {
+                            $type = 'csv';
+                        } elseif ($ext === 'pdf' && str_contains($name, 'SET')) {
+                            $type = 'pdf_programming';
+                        } elseif ($ext === 'pdf' && str_contains($name, 'INS')) {
+                            $type = 'pdf_installation';
+                        } else {
+                            continue; // archivo no reconocido (ya validado antes)
+                        }
+
+                        $path = $file->store(
+                            "installations/{$installation->id}/{$subSiteId}/{$type}"
+                        );
+
+                        InstallationFile::create([
+                            'installation_id' => $installation->id,
+                            'sub_site_id' => $subSiteId,
+                            'type' => $type,
+                            'original_name' => $file->getClientOriginalName(),
+                            'file_path' => $path,
+                            'file_size' => $file->getSize(),
+                            'mime_type' => $file->getMimeType(),
+                        ]);
                     }
-
-                    $path = $file->store(
-                        "installations/{$installation->id}/{$subSiteId}/{$type}"
-                    );
-
-                    InstallationFile::create([
-                        'installation_id' => $installation->id,
-                        'sub_site_id' => $subSiteId,
-                        'type' => $type,
-                        'original_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_size' => $file->getSize(),
-                        'mime_type' => $file->getMimeType(),
-                    ]);
                 }
 
             }
-            if (empty($request->files)) {
+            if (!$hasFiles) {
                 $installation->logs()->create([
                     'user_id' => auth()->id(),
                     'action' => 'Instalación sin archivos',
